@@ -38,4 +38,35 @@ namespace GraphyDb.IO
             LabelId = labelId;
         }
     }
+
+    public class EdgeBlock
+    {
+        public bool Used;
+        public int FirstNode;
+        public int SecondNode;
+        public int FirstNodePreviousRelation;
+        public int FirstNodeNextRelation;
+        public int SecondNodePreviousRelation;
+        public int SecondNodeNextRelation;
+        public int NextProperty;
+        public int LabelId;
+        public int EdgeId;
+
+        public EdgeBlock() { }
+        public EdgeBlock(bool used, int firstNode, int secondNode, int firstNodePreviousRelation,
+            int firstNodeNextRelation, int secondNodePreviousRelation, int secondNodeNextRelation, int nextProperty,
+            int labelId, int edgeId)
+        {
+            Used = used;
+            FirstNode = firstNode;
+            SecondNode = secondNode;
+            FirstNodePreviousRelation = firstNodePreviousRelation;
+            FirstNodeNextRelation = firstNodeNextRelation;
+            SecondNodePreviousRelation = secondNodePreviousRelation;
+            SecondNodeNextRelation = secondNodeNextRelation;
+            NextProperty = nextProperty;
+            LabelId = labelId;
+            EdgeId = edgeId;
+        }
+    }
 }

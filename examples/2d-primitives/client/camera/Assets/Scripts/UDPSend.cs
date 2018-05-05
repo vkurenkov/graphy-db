@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Linq;
 
 public class UDPSend : MonoBehaviour
 {
@@ -17,9 +18,13 @@ public class UDPSend : MonoBehaviour
 		}
 
 		string jsonString = buildJSONFromObjects (m_objectsManager.GetVisible());
-		byte[] bytes = UTF8Encoding.UTF8.GetBytes (jsonString);
+	    var objectsBytes = UTF8Encoding.UTF8.GetBytes (jsonString);
 
-		m_client.Send (bytes, bytes.Length, m_remote);
+        var message = new byte[objectsBytes.Length + 1];
+        message[0] = 0; // The line sets up the message type (ParseObjects)
+        System.Array.Copy(objectsBytes, 0, message, 1, objectsBytes.Length);
+
+		m_client.Send (message, message.Length, m_remote);
 		m_lastSendTime = Time.time;
 	}
     private string buildJSONFromObjects(List<PrimitiveObject> objects)
@@ -31,14 +36,13 @@ public class UDPSend : MonoBehaviour
             stringObjects.Add(o.ToJson());
         }
 
-		return string.Format("{{\"data\":[{0}]}}", string.Join (",", stringObjects.ToArray()));
+		return string.Format("{{\"Objects\":[{0}]}}", string.Join (",", stringObjects.ToArray()));
 	}
 
     private void Start()
     {
         m_remote = new IPEndPoint(IPAddress.Parse(IP), port);
         m_client = new UdpClient();
-        //m_client.Connect(m_remote);
         m_lastSendTime = 0.0f;
     }
 

@@ -23,6 +23,7 @@ class Program
 
     private static void HandleMessage(byte[] message)
     {
+        // Check whether we can handle the message
         if (message[0] >= Enum.GetNames(typeof(MessageType)).Length)
         {
             Console.WriteLine("Message type (" + message[0].ToString() + " is not supported.)");

@@ -259,3 +259,14 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+# Ignore for example based on Unity engine
+examples/2d-primitives/client/*.pidb.meta
+examples/2d-primitives/client/*.pdb.meta
+examples/2d-primitives/client/sysinfo.txt
+examples/2d-primitives/client/[Ll]ibrary/
+examples/2d-primitives/client/[Tt]emp/
+examples/2d-primitives/client/[Oo]bj/
+examples/2d-primitives/client/[Bb]uild/
+examples/2d-primitives/client/[Bb]uilds/
+examples/2d-primitives/client/Assets/AssetStoreTools*

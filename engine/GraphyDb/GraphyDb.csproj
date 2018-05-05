@@ -46,14 +46,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntityState.cs" />
     <Compile Include="IO\DbWriter.cs" />
     <Compile Include="Entity.cs" />
-    <Compile Include="EntityChangeEntry.cs" />
+    <Compile Include="IO\Blocks.cs" />
     <Compile Include="Node.cs" />
+    <Compile Include="NodeProperty.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Property.cs" />
     <Compile Include="Relation.cs" />
+    <Compile Include="RelationProperty.cs" />
     <Compile Include="UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>

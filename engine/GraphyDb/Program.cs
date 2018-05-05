@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GraphyDb.IO;
 
 namespace GraphyDb
 {
@@ -16,10 +17,19 @@ namespace GraphyDb
         {
             Trace.AutoFlush = true;
 
-            IO.DbWriter.InitializeFiles();
-            TraceExample();
+            IO.DbWriter.InitializeDatabase();
+            IO.DbWriter.WriteNodeBlock(new NodeBlock(true, 1, 522, 32, 1));
+            IO.DbWriter.WriteNodeBlock(new NodeBlock(true, 2, 525, 32123, 2));
+            IO.DbWriter.WriteNodeBlock(new NodeBlock(true, 3, 523, 32, 3));
 
-            Console.WriteLine("Hello");
+
+            for (int i = 0; i <= 10; i++)
+            {
+                IO.NodeBlock l1 = IO.DbWriter.ReadNodeBlock(i);
+                Console.WriteLine($"Node {l1.NodeId} -> {l1.NextRelationId} with {l1.NextPropertyId}");
+
+            }
+
             Console.ReadLine();
         }
 

@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Linq;
+using System.Net.Mime;
+using System.Text;
 
 namespace GraphyDb.IO
 {
     public static class DbWriter
     {
         private static readonly TraceSource TraceSource = new TraceSource("TraceGraphyDb");
-
         private const string NodePath = "node.storage.db";
         private const string EdgePath = "edge.storage.db";
         private const string LabelPath = "label.storage.db";
@@ -19,21 +22,18 @@ namespace GraphyDb.IO
         private const string PropertyNamePath = "property_name.storage.db";
         private const string StringPath = "string.storage.db";
         private const string ConsisterPath = "consister.log";
-        private const string IdStoragePath = "id.storage.json";
-
+        private const string IdStoragePath = "id.storage";
         private static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
-
         private static readonly Dictionary<string, int> BlockByteSize = new Dictionary<string, int>()
         {
             {StringPath, 66},
             {PropertyNamePath, 66},
             {PropertyPath, 13},
-            {NodePath, 17},
+            {NodePath, 13},
             {EdgePath, 33},
-            {LabelPath, 66},
+            {LabelPath, 34},
             {IdStoragePath, 4}
         };
-
         private static readonly Dictionary<string, int> IdStoreOrderNumber = new Dictionary<string, int>()
         {
             {StringPath, 1},
@@ -43,16 +43,15 @@ namespace GraphyDb.IO
             {EdgePath, 5},
             {LabelPath, 0}
         };
-
-
-        private static Dictionary<string, FileStream> filePoolDictionary = new Dictionary<string, FileStream>();
-        private static Dictionary<string, int> idStorageDictionary = new Dictionary<string, int>();
+        private static readonly Dictionary<string, FileStream> FilePoolDictionary = new Dictionary<string, FileStream>();
+        private static readonly Dictionary<string, int> IdStorageDictionary = new Dictionary<string, int>();
 
         /// <summary>
         /// Create storage files if missing
         /// </summary>
-        public static void InitializeFiles()
-        {
+        public static void InitializeDatabase()
+        {   
+            // Paths to storage files
             var dbFilePaths = new List<string>
             {
                 NodePath,
@@ -64,40 +63,39 @@ namespace GraphyDb.IO
             };
 
             try
-            {
+            {   
+                // Create FileStream associated with each file
                 foreach (string filePath in dbFilePaths)
                 {
-                    filePoolDictionary[filePath] = new FileStream(Path.Combine(DbPath, filePath), FileMode.OpenOrCreate,
+                    FilePoolDictionary[filePath] = new FileStream(Path.Combine(DbPath, filePath), FileMode.OpenOrCreate,
                         FileAccess.ReadWrite, FileShare.Read);
                 }
 
                 // Create new empty IdStorage if not present with next free id.
+                // Else initialize .storage.db -> ID mapping
                 if (!File.Exists(Path.Combine(DbPath, IdStoragePath)))
                 {
-                    filePoolDictionary[IdStoragePath] = new FileStream(Path.Combine(DbPath, IdStoragePath), FileMode.Create,
+                    FilePoolDictionary[IdStoragePath] = new FileStream(Path.Combine(DbPath, IdStoragePath), FileMode.Create,
                         FileAccess.ReadWrite, FileShare.Read);
-                    foreach (var file in dbFilePaths)
+                    foreach (var filePath in dbFilePaths)
                     {
-                        filePoolDictionary[IdStoragePath].Write(BitConverter.GetBytes(1), 0, 4);
+                        FilePoolDictionary[IdStoragePath].Write(BitConverter.GetBytes(1), 0, 4);
+                        IdStorageDictionary[filePath] = 1;
                     }
-                    filePoolDictionary[IdStoragePath].Flush();
+                    FilePoolDictionary[IdStoragePath].Flush();
                 }
                 else
-                {
-                    filePoolDictionary[IdStoragePath] = new FileStream(Path.Combine(DbPath, IdStoragePath), FileMode.Open,
+                {   
+                    FilePoolDictionary[IdStoragePath] = new FileStream(Path.Combine(DbPath, IdStoragePath), FileMode.Open,
                         FileAccess.ReadWrite, FileShare.Read);
-                }
-
-
-                // Initialize .storage.db -> ID mapping
-                foreach (string filePath in dbFilePaths)
-                {
-                    var blockNumber = IdStoreOrderNumber[filePath];
-                    var storedIdBytes = new byte[4];
-                    ReadBlock(IdStoragePath, blockNumber, storedIdBytes);
-                    var lastId = BitConverter.ToInt32(storedIdBytes, 0);
-                    Console.WriteLine($"Last Id for {filePath} is {lastId}");
-                    idStorageDictionary[filePath] = lastId;
+                    foreach (var filePath in dbFilePaths)
+                    {
+                        var blockNumber = IdStoreOrderNumber[filePath];
+                        var storedIdBytes = new byte[4];
+                        ReadBlock(IdStoragePath, blockNumber, storedIdBytes);
+                        IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
+                        Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
+                    }
                 }
             }
             catch (Exception ex)
@@ -120,6 +118,61 @@ namespace GraphyDb.IO
         }
 
 
+        private static int ConvertBitArrayToInt(BitArray bitArray)
+        {
+            if (bitArray.Length > 32)
+                throw new ArgumentException("Argument length shall be at most 32 bits.");
+            int[] tempArray = new int[1];
+            bitArray.CopyTo(tempArray, 0);
+            return tempArray[0];
+        }
+
+        public static void WriteNodeBlock(IO.NodeBlock e)
+        {
+            var buffer = new byte[BlockByteSize[NodePath]];
+            Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
+            Array.Copy(BitConverter.GetBytes(e.NextRelationId), 0, buffer, 1, 4);
+            Array.Copy(BitConverter.GetBytes(e.NextPropertyId), 0, buffer, 5, 4);
+            Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 9, 4);
+            WriteBlock(NodePath, e.NodeId, buffer);
+        }
+        public static IO.NodeBlock ReadNodeBlock(int nodeId)
+        {
+            var buffer = new byte[BlockByteSize[NodePath]];
+            ReadBlock(NodePath, nodeId, buffer);
+            var used = BitConverter.ToBoolean(buffer, 0);
+            var nextRelationId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
+            var nextPropertyId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
+            var labelId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
+            return new NodeBlock(used, nodeId, nextRelationId, nextPropertyId, labelId);
+        }
+        public static IO.LabelBlock ReadLabelBlock(int labelId)
+        {
+            var buffer = new byte[BlockByteSize[LabelPath]];
+            ReadBlock(LabelPath, labelId, buffer);
+            var used = BitConverter.ToBoolean(buffer, 0);
+            var bitsUsed = buffer[1];
+            var labelName = System.Text.Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
+            return new LabelBlock(used, labelName, labelId);
+        }
+        public static void WriteLabelBlock(IO.LabelBlock l)
+        {   
+            var buffer = new byte[BlockByteSize[LabelPath]];
+            Array.Copy(BitConverter.GetBytes(l.Used), buffer, 1);
+            var strBytes = Encoding.UTF8.GetBytes(l.Data);
+            byte[] truncStrArray = new byte[32];
+            var truncationIndex = Math.Min(strBytes.Length, truncStrArray.Length);
+            Array.Copy(strBytes, truncStrArray, truncationIndex);
+            buffer[1] = (byte) strBytes.Length;
+            Array.Copy(truncStrArray, 0, buffer, 2, truncationIndex);
+            WriteBlock(LabelPath, l.LabelId, buffer);
+        }
+
+        //        private static Node ReadNode(int nodeId)
+        //        {
+        //
+        //        }
+
         /// <summary>
         /// Read specific block from file
         /// </summary>
@@ -129,8 +182,8 @@ namespace GraphyDb.IO
         private static void ReadBlock(string filePath, int blockNumber, byte[] block)
         {
             int offset = blockNumber * BlockByteSize[filePath];
-            filePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            filePoolDictionary[filePath].Read(block, 0, BlockByteSize[filePath]);
+            FilePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            FilePoolDictionary[filePath].Read(block, 0, BlockByteSize[filePath]);
         }
 
         /// <summary>
@@ -142,8 +195,11 @@ namespace GraphyDb.IO
         private static void WriteBlock(string filePath, int blockNumber, byte[] block)
         {
             int offset = blockNumber * BlockByteSize[filePath];
-            filePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            filePoolDictionary[filePath].Write(block, 0, BlockByteSize[filePath]); //Maybe WriteAsync?
+            FilePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            FilePoolDictionary[filePath].Write(block, 0, BlockByteSize[filePath]); //Maybe WriteAsync?
+            FilePoolDictionary[filePath].Flush();
         }
     }
+
+
 }

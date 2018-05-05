@@ -799,8 +799,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c2fa2499db796043ac01a4a5396a466, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SendingRate: 0.03
-  m_ObjectsManager: {fileID: 1240441207}
+  m_sendingRate: 0.03
+  m_objectsManager: {fileID: 1240441207}
 --- !u!1 &2067949072
 GameObject:
   m_ObjectHideFlags: 0

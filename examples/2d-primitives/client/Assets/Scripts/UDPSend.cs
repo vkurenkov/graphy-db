@@ -1,12 +1,8 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Runtime.InteropServices;
 
 public class UDPSend : MonoBehaviour
 {
@@ -22,40 +18,38 @@ public class UDPSend : MonoBehaviour
 
 	public ObjectsManager m_ObjectsManager;
 
-
-    public void Start()
+    private void FixedUpdate()
     {
-        Init();
-		m_LastSendTime = 0.0f;
-    }
-		
-	void FixedUpdate() {
 
 		if (Time.time - m_LastSendTime < m_SendingRate) {
 			return;
 		}
 
 		string jsonString = buildJSONFromObjects (m_ObjectsManager.GetVisible());
-//		Debug.Log (jsonString);
-
 		byte[] bytes = UTF8Encoding.UTF8.GetBytes (jsonString);
 
 		m_Client.Send (bytes, bytes.Length, m_Remote);
-
 		m_LastSendTime = Time.time;
 	}
 
-	string buildJSONFromObjects(List<ObjectDescription> objects) {
-		List<string> stringObjects = new List<string> ();
+    private string buildJSONFromObjects(List<PrimitiveObject> objects)
+    {
+		var stringObjects = new List<string> ();
 
-		foreach (ObjectDescription o in objects) {
-			stringObjects.Add (JsonUtility.ToJson (o));
-		}
+        foreach (var o in objects)
+        {
+            stringObjects.Add(o.ToJson());
+        }
 
 		return string.Format("{{\"data\":[{0}]}}", string.Join (",", stringObjects.ToArray()));
 	}
-		
-    void Init()
+
+    private void Start()
+    {
+        Init();
+        m_LastSendTime = 0.0f;
+    }
+    private void Init()
     {
 		m_Remote= new IPEndPoint(IPAddress.Parse(IP), port);
 		m_Client = new UdpClient();

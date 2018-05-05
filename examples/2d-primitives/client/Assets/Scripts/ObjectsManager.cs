@@ -1,37 +1,35 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectsManager : MonoBehaviour {
+public class ObjectsManager : MonoBehaviour
+{
+    public List<PrimitiveObject> GetVisible()
+    {
+        List<PrimitiveObject> visible = new List<PrimitiveObject>();
 
-	List<GameObject> m_Objects;
+        foreach(Transform child in transform)
+        {
+            if (child.gameObject.activeSelf && child.GetComponent<SpriteRenderer>().isVisible)
+            {
+                visible.Add(child.GetComponent<PrimitiveObject>());
+            }
+        }
 
-	// Use this for initialization
-	void Start () {
-		m_Objects = new List<GameObject> (transform.childCount);
+        return visible;
+    }
+    private void Start()
+    {
+        m_objects = new List<GameObject>(transform.childCount);
 
-		for (int i = 0; i < transform.childCount; i++) {
-			if (transform.GetChild (i).gameObject.activeSelf) {
-				m_Objects.Add (transform.GetChild (i).gameObject);
-			}
-		}
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            if (transform.GetChild(i).gameObject.activeSelf)
+            {
+                m_objects.Add(transform.GetChild(i).gameObject);
+            }
+        }
+    }
 
-	public List<ObjectDescription> GetVisible() {
-		List<ObjectDescription> visible = new List<ObjectDescription> ();
+    private List<GameObject> m_objects;
 
-		for (int i = 0; i < transform.childCount; i++) {
-			GameObject child = transform.GetChild (i).gameObject;
-			if (child.activeSelf && child.GetComponent<SpriteRenderer> ().isVisible) {
-				visible.Add(new ObjectDescription(child.transform.position.x, child.transform.position.y));
-			}
-		}
-
-		return visible;
-	}
 }

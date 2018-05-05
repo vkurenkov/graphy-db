@@ -17,11 +17,11 @@ class Program
         {
             var client = new IPEndPoint(IPAddress.Any, port);
             var data = server.Receive(ref client);
-            HandleMessage(data);
+            HandleMessage(data, server, client);
         }
     }
 
-    private static void HandleMessage(byte[] message)
+    private static void HandleMessage(byte[] message, UdpClient server, IPEndPoint client)
     {
         // Check whether we can handle the message
         if (message[0] >= Enum.GetNames(typeof(MessageType)).Length)
@@ -41,7 +41,12 @@ class Program
         }
         else if(messageType == MessageType.GetNeighbors)
         {
-            throw new NotImplementedException();
+            var deserializedMessage = JsonConvert.DeserializeObject<GetNeighborsMessage>(decodedMessage);
+            // TODO: Add graph search
+            var answer = Encoding.UTF8.GetBytes("Okay, I've received your message!");
+            server.Send(answer, answer.Length, client);
+
+            Console.Write(deserializedMessage);
         }
         else if(messageType == MessageType.Between)
         {

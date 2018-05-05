@@ -13,9 +13,21 @@ public class ParseObjectsMessage
 
         public override string ToString()
         {
-            return X.ToString() + "; " + Y.ToString() + "; " + Shape + "; " + Color + ";";
+            return "Primitive object: " + X.ToString() + "; " + Y.ToString() + "; " + Shape + "; " + Color + ";";
         }
     }
 
     public List<PrimitiveObject> Objects;
+}
+
+public class GetNeighborsMessage
+{
+    public string Shape;
+    public string Color;
+    public int Range;
+
+    public override string ToString()
+    {
+        return "Get neighbors: " + Shape + "; " + Color + "; " + Range + ";";
+    }
 }

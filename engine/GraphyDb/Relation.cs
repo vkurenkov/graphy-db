@@ -13,7 +13,7 @@ namespace GraphyDb
         public int LabelId;
         public string Label;
 
-        private Dictionary<string, Property> properties;
+        private readonly Dictionary<string, RelationProperty> properties;
 
         public Relation(Node from, Node to, string label, EntityState state)
         {
@@ -30,14 +30,33 @@ namespace GraphyDb
                 throw new ArgumentException();
             }
 
-            properties = new Dictionary<string, Property>();
+            Db = from.Db;
+
+            properties = new Dictionary<string, RelationProperty>();
 
             State = state;
             if (state != EntityState.Unchanged)
-                From.Db.ChangedEntities.Add(this);
+                Db.ChangedEntities.Add(this);
         }
 
+        public object this[string key]
+        {
+            get => properties[key].Value;
 
+            set
+            {
+                if (properties.TryGetValue(key, out var property))
+                {
+                    // modifying existing property:
+                    property.Value = value;
+                }
+                else
+                {
+                    // adding new property:
+                    properties[key] = new RelationProperty(this, key, value);
+                }
+            }
+        }
 
 
     }

@@ -12,18 +12,18 @@ namespace GraphyDb
     }
 
 
-    public class Property : Entity
+    public abstract class Property : Entity
     {
         static readonly List<Type> SupportedTypes = new List<Type> {typeof(int), typeof(string), typeof(bool), typeof(float)};
 
 
         public int PropertyId;
 
-        public Node Node;
+        protected Entity Parent;
 
         public string Key;
 
-        public Property(Node node, string key, object value)
+        protected Property(Entity parent, string key, object value)
         {
             if (!SupportedTypes.Contains(value.GetType()))
             {
@@ -32,7 +32,7 @@ namespace GraphyDb
 
             PropertyId = 0;
 
-            Node = node ?? throw new ArgumentNullException(nameof(node));
+            Parent = parent ?? throw new ArgumentNullException(nameof(parent));
 
             if (string.IsNullOrEmpty(key))
             {
@@ -42,8 +42,10 @@ namespace GraphyDb
 
             Value = value;
 
+            Db = parent.Db;
+
             State |= EntityState.Added;
-            Node.Db.ChangedEntities.Add(this);
+            Db.ChangedEntities.Add(this);
         }
 
         public object Value
@@ -59,7 +61,7 @@ namespace GraphyDb
                 this.value = value;
 
                 State |= EntityState.Modified;
-                Node.Db.ChangedEntities.Add(this);
+                Db.ChangedEntities.Add(this);
             }
         }
 

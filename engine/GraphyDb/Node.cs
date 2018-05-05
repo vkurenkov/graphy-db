@@ -9,12 +9,10 @@ namespace GraphyDb
         public int LabelId;
         public string Label;
 
-        private readonly Dictionary<string, Property> properties;
+        private readonly Dictionary<string, NodeProperty> properties;
 
-        private List<Relation> outRelations;
-        private List<Relation> inRelations;
-
-        public UnitOfWork Db;
+        public List<Relation> OutRelations;
+        public List<Relation> InRelations;
 
 
         public Node(string label, UnitOfWork db, EntityState state)
@@ -24,9 +22,9 @@ namespace GraphyDb
             Label = label;
             Db = db;
 
-            properties = new Dictionary<string, Property>();
-            outRelations = new List<Relation>();
-            inRelations = new List<Relation>();
+            properties = new Dictionary<string, NodeProperty>();
+            OutRelations = new List<Relation>();
+            InRelations = new List<Relation>();
 
 
             State = state;
@@ -49,7 +47,7 @@ namespace GraphyDb
                 else
                 {
                     // adding new property:
-                    properties[key] = new Property(this, key, value);
+                    properties[key] = new NodeProperty(this, key, value);
                 }
             }
         }

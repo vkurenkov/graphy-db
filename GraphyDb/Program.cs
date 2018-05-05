@@ -10,6 +10,7 @@ namespace GraphyDb
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Hello");
         }
     }
 }

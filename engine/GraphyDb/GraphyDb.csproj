@@ -44,8 +44,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbWriter.cs" />
+    <Compile Include="Entity.cs" />
+    <Compile Include="EntityChangeEntry.cs" />
+    <Compile Include="Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Property.cs" />
+    <Compile Include="Relation.cs" />
+    <Compile Include="UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

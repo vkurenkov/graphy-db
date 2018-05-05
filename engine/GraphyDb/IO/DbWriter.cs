@@ -146,6 +146,40 @@ namespace GraphyDb.IO
             var labelId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
             return new NodeBlock(used, nodeId, nextRelationId, nextPropertyId, labelId);
         }
+
+        public static void WriteEdgeBlock(IO.EdgeBlock e)
+        {
+            var buffer = new byte[BlockByteSize[EdgePath]];
+            Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
+            Array.Copy(BitConverter.GetBytes(e.FirstNode), 0, buffer, 1, 4);
+            Array.Copy(BitConverter.GetBytes(e.SecondNode), 0, buffer, 5, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstNodePreviousRelation), 0, buffer, 9, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstNodeNextRelation), 0, buffer, 13, 4);
+            Array.Copy(BitConverter.GetBytes(e.SecondNodePreviousRelation), 0, buffer, 17, 4);
+            Array.Copy(BitConverter.GetBytes(e.SecondNodeNextRelation), 0, buffer, 21, 4);
+            Array.Copy(BitConverter.GetBytes(e.NextProperty), 0, buffer, 25, 4);
+            Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 29, 4);
+            WriteBlock(EdgePath, e.EdgeId, buffer);
+        }
+        public static IO.EdgeBlock ReadEdgeBlock(int edgeId)
+        {
+            var buffer = new byte[BlockByteSize[EdgePath]];
+            ReadBlock(EdgePath, edgeId, buffer);
+            IO.EdgeBlock e = new EdgeBlock
+            {
+                Used = BitConverter.ToBoolean(buffer, 0),
+                FirstNode = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
+                SecondNode = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0),
+                FirstNodePreviousRelation = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0),
+                FirstNodeNextRelation = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0),
+                SecondNodePreviousRelation = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0),
+                SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0),
+                NextProperty = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0),
+                LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0)
+            };
+            return e;
+        }
+
         public static IO.LabelBlock ReadLabelBlock(int labelId)
         {
             var buffer = new byte[BlockByteSize[LabelPath]];
@@ -168,10 +202,7 @@ namespace GraphyDb.IO
             WriteBlock(LabelPath, l.LabelId, buffer);
         }
 
-        //        private static Node ReadNode(int nodeId)
-        //        {
-        //
-        //        }
+       
 
         /// <summary>
         /// Read specific block from file

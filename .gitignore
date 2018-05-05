@@ -261,12 +261,12 @@ __pycache__/
 *.pyc
 
 # Ignore for example based on Unity engine
-examples/2d-primitives/client/*.pidb.meta
-examples/2d-primitives/client/*.pdb.meta
-examples/2d-primitives/client/sysinfo.txt
-examples/2d-primitives/client/[Ll]ibrary/
-examples/2d-primitives/client/[Tt]emp/
-examples/2d-primitives/client/[Oo]bj/
-examples/2d-primitives/client/[Bb]uild/
-examples/2d-primitives/client/[Bb]uilds/
-examples/2d-primitives/client/Assets/AssetStoreTools*
+examples/2d-primitives/client/camera/*.pidb.meta
+examples/2d-primitives/client/camera/*.pdb.meta
+examples/2d-primitives/client/camera/sysinfo.txt
+examples/2d-primitives/client/camera/[Ll]ibrary/
+examples/2d-primitives/client/camera/[Tt]emp/
+examples/2d-primitives/client/camera/[Oo]bj/
+examples/2d-primitives/client/camera/[Bb]uild/
+examples/2d-primitives/client/camera/[Bb]uilds/
+examples/2d-primitives/client/Assets/camera/AssetStoreTools*

@@ -33,6 +33,7 @@ namespace GraphyDb.IO
             {LabelPath, 34},
             {IdStoragePath, 4}
         };
+
         internal static readonly Dictionary<string, int> IdStoreOrderNumber = new Dictionary<string, int>()
         {
             {StringPath, 1},
@@ -43,6 +44,7 @@ namespace GraphyDb.IO
             {EdgePath, 6},
             {LabelPath, 0}
         };
+
         private static FileStream idFileStream;
         internal static readonly Dictionary<string, int> IdStorageDictionary = new Dictionary<string, int>();
 
@@ -86,7 +88,7 @@ namespace GraphyDb.IO
                 }
                 else
                 {
-                   idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
+                    idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
                         FileMode.Open,
                         FileAccess.ReadWrite, FileShare.Read);
 
@@ -94,7 +96,7 @@ namespace GraphyDb.IO
                     {
                         var blockNumber = IdStoreOrderNumber[filePath];
                         var storedIdBytes = new byte[4];
-                        idFileStream.Seek(blockNumber*4, SeekOrigin.Begin);
+                        idFileStream.Seek(blockNumber * 4, SeekOrigin.Begin);
                         idFileStream.Read(storedIdBytes, 0, 4);
                         IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
                         Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
@@ -123,7 +125,17 @@ namespace GraphyDb.IO
             {
                 File.Delete(Path.Combine(DbPath, filePath));
             }
+
             File.Delete(Path.Combine(DbPath, IdStoragePath));
+        }
+
+        public static int AllocateId(string filePath)
+        {
+            var lastId = IdStorageDictionary[filePath];
+            IdStorageDictionary[filePath] += 1;
+            idFileStream.Seek(IdStoreOrderNumber[filePath] * 4, SeekOrigin.Begin);
+            idFileStream.Write(BitConverter.GetBytes(IdStorageDictionary[filePath]), 0, 4);
+            return lastId;
         }
 
         public static void ConsisterMonitor()

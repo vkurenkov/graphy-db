@@ -4,9 +4,9 @@ namespace GraphyDb
 {
     public class Query
     {
-        private UnitOfWork Db;
+        private DbEngine Db;
 
-        public Query(UnitOfWork db)
+        public Query(DbEngine db)
         {
             Db = db;
         }

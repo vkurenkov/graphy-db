@@ -122,6 +122,13 @@ namespace GraphyDb
 
 
 
+        public void DeleteProperty(string key)
+        {
+            Properties.TryGetValue(key, out var property);
+            property?.Delete();
+            Properties.Remove(key);
+        }
+
 
 
 

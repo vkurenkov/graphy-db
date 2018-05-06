@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntityState.cs" />
+    <Compile Include="EventualConsister.cs" />
     <Compile Include="IO\DbFetcher.cs" />
     <Compile Include="IO\DbReader.cs" />
     <Compile Include="IO\DbControl.cs" />

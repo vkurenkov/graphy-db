@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Linq;
-using System.Net.Mime;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace GraphyDb.IO
 {
@@ -39,7 +33,6 @@ namespace GraphyDb.IO
             {LabelPath, 34},
             {IdStoragePath, 4}
         };
-
         internal static readonly Dictionary<string, int> IdStoreOrderNumber = new Dictionary<string, int>()
         {
             {StringPath, 1},
@@ -50,11 +43,7 @@ namespace GraphyDb.IO
             {EdgePath, 6},
             {LabelPath, 0}
         };
-
         private static FileStream idFileStream;
-
-
-
         internal static readonly Dictionary<string, int> IdStorageDictionary = new Dictionary<string, int>();
 
         // Paths to storage files
@@ -76,6 +65,7 @@ namespace GraphyDb.IO
         {
             try
             {
+                if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
                 DbWriter.InitializeDbWriter();
                 DbReader.InitializeDbReader();
 

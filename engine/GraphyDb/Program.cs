@@ -37,8 +37,8 @@ namespace GraphyDb
             DbWriter.WritePropertyBlock(new EdgePropertyBlock(1, true, PropertyType.Bool, 12, new byte[4]{0,0,0,1}, 32, 2));
             var ep = new EdgePropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.EdgePropertyPath, 1));
 
-            Console.WriteLine($"NodeProperty type {np.PtType}, {np.PropertyName}:{BitConverter.ToSingle(np.Value,0)}");
-            Console.WriteLine($"EdgeProperty type {ep.PtType}, {ep.PropertyName}:{BitConverter.ToBoolean(ep.Value,3)}");
+            Console.WriteLine($"NodeProperty type {np.PropertyType}, {np.PropertyNameId}:{BitConverter.ToSingle(np.Value,0)}");
+            Console.WriteLine($"EdgeProperty type {ep.PropertyType}, {ep.PropertyNameId}:{BitConverter.ToBoolean(ep.Value,3)}");
 
 
             Console.ReadLine();

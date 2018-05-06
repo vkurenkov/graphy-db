@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using GraphyDb.IO;
 
 namespace GraphyDb
 {
     public class Query
     {
-        private DbEngine Db;
+        private readonly DbEngine db;
 
         public Query(DbEngine db)
         {
-            Db = db;
+            this.db = db;
+            nodeSets = new List<NodeSet>();
+            relationSets = new List<RelationSet>();
         }
 
         private List<NodeSet> nodeSets;
@@ -17,11 +21,19 @@ namespace GraphyDb
 
         public NodeSet Match(NodeDescription nodeDescription)
         {
-            // todo: do
-            NodeSet result = null;
-            nodeSets.Add(result);
+            var nodeBlocks = DbFetcher.SelectNodeBlocksByLabelAndProperties(nodeDescription.Label, nodeDescription.Props);
 
-            return result;
+
+            var nodeSet = new NodeSet();
+
+            foreach (var nodeBlock in nodeBlocks)
+            {
+                nodeSet.Nodes.Add(new Node(nodeBlock, db));
+            }
+
+            nodeSets.Add(nodeSet);
+
+            return nodeSet;
         }
 
 

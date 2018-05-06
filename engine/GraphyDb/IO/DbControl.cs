@@ -21,6 +21,7 @@ namespace GraphyDb.IO
         internal const string ConsisterPath = "consister.log";
         internal const string IdStoragePath = "id.storage";
         internal static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
+        private static bool initializedIOFlag = false;
 
         internal static readonly Dictionary<string, int> BlockByteSize = new Dictionary<string, int>()
         {
@@ -68,62 +69,70 @@ namespace GraphyDb.IO
         /// </summary>
         public static void InitializeIO()
         {
-            try
+            if (!initializedIOFlag)
             {
-                if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
-                DbWriter.InitializeDbWriter();
-                DbReader.InitializeDbReader();
-                DbFetcher.InitializeDbFetcher();
-
-                // Create new empty IdStorage if not present with next free id.
-                // Else initialize .storage.db -> ID mapping
-                if (!File.Exists(Path.Combine(DbPath, IdStoragePath)))
+                try
                 {
-                    idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
-                        FileMode.Create,
-                        FileAccess.ReadWrite, FileShare.Read);
-                    foreach (var filePath in DbFilePaths)
+                    if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
+                    DbWriter.InitializeDbWriter();
+                    DbReader.InitializeDbReader();
+                    DbFetcher.InitializeDbFetcher();
+
+                    // Create new empty IdStorage if not present with next free id.
+                    // Else initialize .storage.db -> ID mapping
+                    if (!File.Exists(Path.Combine(DbPath, IdStoragePath)))
                     {
-                        idFileStream.Write(BitConverter.GetBytes(1), 0, 4);
-                        IdStorageDictionary[filePath] = 1;
+                        idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
+                            FileMode.Create,
+                            FileAccess.ReadWrite, FileShare.Read);
+                        foreach (var filePath in DbFilePaths)
+                        {
+                            idFileStream.Write(BitConverter.GetBytes(1), 0, 4);
+                            IdStorageDictionary[filePath] = 1;
+                        }
+
+                        idFileStream.Flush();
+                    }
+                    else
+                    {
+                        idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
+                            FileMode.Open,
+                            FileAccess.ReadWrite, FileShare.Read);
+
+                        foreach (var filePath in DbFilePaths)
+                        {
+                            var blockNumber = IdStoreOrderNumber[filePath];
+                            var storedIdBytes = new byte[4];
+                            idFileStream.Seek(blockNumber * 4, SeekOrigin.Begin);
+                            idFileStream.Read(storedIdBytes, 0, 4);
+                            IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
+                            Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
+                        }
                     }
 
-                    idFileStream.Flush();
-                }
-                else
-                {
-                    idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
-                        FileMode.Open,
-                        FileAccess.ReadWrite, FileShare.Read);
-
-                    foreach (var filePath in DbFilePaths)
+                    // Initialize Inverted Indexes
+                    for (var i = 1; i < FetchLastId(LabelPath); ++i)
                     {
-                        var blockNumber = IdStoreOrderNumber[filePath];
-                        var storedIdBytes = new byte[4];
-                        idFileStream.Seek(blockNumber * 4, SeekOrigin.Begin);
-                        idFileStream.Read(storedIdBytes, 0, 4);
-                        IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
-                        Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
+                        var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
+                        LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
+                    }
+
+                    for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
+                    {
+                        var propertyNameBlock =
+                            new PropertyNameBlock(DbReader.ReadGenericStringBlock(PropertyNamePath, i));
+                        PropertyNameInvertedIndex[propertyNameBlock.Data] = propertyNameBlock.Id;
                     }
                 }
-
-                // Initialize Inverted Indexes
-                for (var i = 1; i < FetchLastId(LabelPath); ++i)
+                catch (Exception ex)
                 {
-                    var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
-                    LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
+                    TraceSource.TraceEvent(TraceEventType.Error, 1,
+                        $"Database Initialization Falied: {ex}");
                 }
-
-                for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
+                finally
                 {
-                    var propertyNameBlock = new PropertyNameBlock(DbReader.ReadGenericStringBlock(PropertyNamePath, i));
-                    PropertyNameInvertedIndex[propertyNameBlock.Data] = propertyNameBlock.Id;
+                    initializedIOFlag = true;
                 }
-            }
-            catch (Exception ex)
-            {
-                TraceSource.TraceEvent(TraceEventType.Error, 1,
-                    $"Database Initialization Falied: {ex}");
             }
         }
 
@@ -180,7 +189,5 @@ namespace GraphyDb.IO
             PropertyNameInvertedIndex[propertyName] = newPropertyNameId;
             return newPropertyNameId;
         }
-
-        
     }
 }

@@ -18,17 +18,27 @@ namespace GraphyDb
             Trace.AutoFlush = true;
 
             IO.DbWriter.InitializeDatabase();
-            IO.DbWriter.WriteNodeBlock(new NodeBlock(true, 1, 522, 32, 1));
-            IO.DbWriter.WriteNodeBlock(new NodeBlock(true, 2, 525, 32123, 2));
-            IO.DbWriter.WriteNodeBlock(new NodeBlock(true, 3, 523, 32, 3));
+
+            IO.DbWriter.WriteGenericStringBlock(new LabelBlock(true, "Branda", 1));
+            IO.DbWriter.WriteGenericStringBlock(new PropertyNameBlock(true, "Chandra", 1));
+            IO.DbWriter.WriteGenericStringBlock(new StringBlock(true, "A-ah-aha!", 1));
 
 
-            for (int i = 0; i <= 10; i++)
-            {
-                IO.NodeBlock l1 = IO.DbWriter.ReadNodeBlock(i);
-                Console.WriteLine($"Node {l1.NodeId} -> {l1.NextRelationId} with {l1.NextPropertyId}");
+            IO.LabelBlock l = new LabelBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.LabelPath, 1));
+            IO.PropertyNameBlock p = new PropertyNameBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.PropertyNamePath, 1));
+            IO.StringBlock s = new StringBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.StringPath, 1));
 
-            }
+            Console.WriteLine($"Label: \"{l.Data}\", Property: \"{p.Data}\", String: \"{s.Data}\"");
+            
+            IO.DbWriter.WritePropertyBlock(new NodePropertyBlock(1, true, PropertyType.String, 12, 24, 32, 2));
+            var np = new NodePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.NodePropertyPath, 1));
+
+            IO.DbWriter.WritePropertyBlock(new EdgePropertyBlock(1, true, PropertyType.Int, 12, 24, 32, 2));
+            var ep = new EdgePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.NodePropertyPath, 1));
+
+            Console.WriteLine($"NodeProperty type {np.PtType}, {np.PropertyName}:{np.Value}");
+            Console.WriteLine($"EdgeProperty type {ep.PtType}, {ep.PropertyName}:{ep.Value}");
+
 
             Console.ReadLine();
         }

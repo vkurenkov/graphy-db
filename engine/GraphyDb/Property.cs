@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GraphyDb
 {
-    public enum PropertyType
+    public enum PropertyType : byte
     {
         Int = 0,
         String = 1,

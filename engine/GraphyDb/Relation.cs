@@ -41,29 +41,29 @@ namespace GraphyDb
         }
 
 
-        public Relation(Node from, Node to, EdgeBlock relationBlock)
+        public Relation(Node from, Node to, RelationBlock relationBlock)
         {
-            RelationId = relationBlock.EdgeId;
+            RelationId = relationBlock.RelationId;
 
             LabelId = relationBlock.LabelId;
             Label = DbReader.ReadGenericStringBlock(DbControl.LabelPath, LabelId).Data;
 
             Properties = new Dictionary<string, RelationProperty>();
 
-            var propertyBlock = DbReader.ReadPropertyBlock(DbControl.EdgePropertyPath, relationBlock.NextProperty);
+            var propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, relationBlock.FirstPropertyId);
 
-            while (propertyBlock.Id != 0)
+            while (propertyBlock.PropertyId != 0)
             {
                 if (!propertyBlock.Used)
                 {
-                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.EdgePropertyPath, propertyBlock.NextProperty);
+                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextProperty);
                     continue;
                 }
 
                 var property = new RelationProperty(this, propertyBlock);
                 Properties.Add(property.Key, property);
 
-                propertyBlock = DbReader.ReadPropertyBlock(DbControl.EdgePropertyPath, propertyBlock.NextProperty);
+                propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextProperty);
             }
 
 
@@ -74,7 +74,8 @@ namespace GraphyDb
             if (From != null)
             {
                 Db = From.Db;
-            } else if (To != null)
+            }
+            else if (To != null)
             {
                 Db = To.Db;
             }
@@ -89,9 +90,7 @@ namespace GraphyDb
             {
                 To = new Node(DbReader.ReadNodeBlock(relationBlock.SecondNode), Db);
             }
-
         }
-
 
 
         public void DeleteProperty(string key)
@@ -100,7 +99,6 @@ namespace GraphyDb
             property?.Delete();
             Properties.Remove(key);
         }
-
 
 
         public object this[string key]
@@ -123,7 +121,6 @@ namespace GraphyDb
         }
 
 
-
         public bool Equals(Relation other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -136,7 +133,7 @@ namespace GraphyDb
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((Relation)obj);
+            return Equals((Relation) obj);
         }
 
         public override int GetHashCode()
@@ -153,6 +150,5 @@ namespace GraphyDb
         {
             return !Equals(left, right);
         }
-
     }
 }

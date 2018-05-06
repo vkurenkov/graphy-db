@@ -50,9 +50,9 @@ namespace GraphyDb
             Properties = new Dictionary<string, NodeProperty>();
 
 
-            var propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nodeBlock.NextPropertyId);
+            var propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nodeBlock.FirstPropertyId);
 
-            while (propertyBlock.Id != 0)
+            while (propertyBlock.PropertyId != 0)
             {
                 if (!propertyBlock.Used)
                 {
@@ -77,13 +77,13 @@ namespace GraphyDb
         {
             OutRelations = new List<Relation>();
 
-            var outRelationBlock = DbReader.ReadEdgeBlock(nodeBlock.FirstOutRelationId);
+            var outRelationBlock = DbReader.ReadRelationBlock(nodeBlock.FirstOutRelationId);
 
-            while (outRelationBlock.EdgeId != 0)
+            while (outRelationBlock.RelationId != 0)
             {
                 if (!outRelationBlock.Used)
                 {
-                    outRelationBlock = DbReader.ReadEdgeBlock(outRelationBlock.FirstNodeNextRelation);
+                    outRelationBlock = DbReader.ReadRelationBlock(outRelationBlock.FirstNodeNextRelation);
                     continue;
                 }
 
@@ -91,7 +91,7 @@ namespace GraphyDb
 
                 OutRelations.Add(relation);
 
-                outRelationBlock = DbReader.ReadEdgeBlock(outRelationBlock.FirstNodeNextRelation);
+                outRelationBlock = DbReader.ReadRelationBlock(outRelationBlock.FirstNodeNextRelation);
             }
 
         }
@@ -100,13 +100,13 @@ namespace GraphyDb
         {
             InRelations = new List<Relation>();
 
-            var inRelationBlock = DbReader.ReadEdgeBlock(nodeBlock.FirstInRelationId);
+            var inRelationBlock = DbReader.ReadRelationBlock(nodeBlock.FirstInRelationId);
 
-            while (inRelationBlock.EdgeId != 0)
+            while (inRelationBlock.RelationId != 0)
             {
                 if (!inRelationBlock.Used)
                 {
-                    inRelationBlock = DbReader.ReadEdgeBlock(inRelationBlock.SecondNodeNextRelation);
+                    inRelationBlock = DbReader.ReadRelationBlock(inRelationBlock.SecondNodeNextRelation);
                     continue;
                 }
 
@@ -114,7 +114,7 @@ namespace GraphyDb
 
                 InRelations.Add(relation);
 
-                inRelationBlock = DbReader.ReadEdgeBlock(inRelationBlock.SecondNodeNextRelation);
+                inRelationBlock = DbReader.ReadRelationBlock(inRelationBlock.SecondNodeNextRelation);
             }
 
         }

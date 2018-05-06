@@ -22,6 +22,7 @@ namespace GraphyDb.IO
         internal const string ConsisterPath = "consister.log";
         internal const string IdStoragePath = "id.storage";
         internal static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
+        private static bool initializedIOFlag = false;
 
         internal static readonly Dictionary<string, int> BlockByteSize = new Dictionary<string, int>()
         {
@@ -69,6 +70,7 @@ namespace GraphyDb.IO
         /// </summary>
         public static void InitializeIO()
         {
+            if (initializedIOFlag) return;
             try
             {
                 if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
@@ -117,7 +119,8 @@ namespace GraphyDb.IO
 
                 for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
                 {
-                    var propertyNameBlock = new PropertyNameBlock(DbReader.ReadGenericStringBlock(PropertyNamePath, i));
+                    var propertyNameBlock =
+                        new PropertyNameBlock(DbReader.ReadGenericStringBlock(PropertyNamePath, i));
                     PropertyNameInvertedIndex[propertyNameBlock.Data] = propertyNameBlock.Id;
                 }
             }
@@ -125,6 +128,10 @@ namespace GraphyDb.IO
             {
                 TraceSource.TraceEvent(TraceEventType.Error, 1,
                     $"Database Initialization Falied: {ex}");
+            }
+            finally
+            {
+                initializedIOFlag = true;
             }
         }
 
@@ -181,7 +188,5 @@ namespace GraphyDb.IO
             PropertyNameInvertedIndex[propertyName] = newPropertyNameId;
             return newPropertyNameId;
         }
-
-        
     }
 }

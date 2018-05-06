@@ -54,7 +54,7 @@ namespace GraphyDb
 
         protected Property(Entity parent, PropertyBlock propertyBlock)
         {
-            PropertyId = propertyBlock.Id;
+            PropertyId = propertyBlock.PropertyId;
             Parent = parent;
             Db = parent.Db;
 

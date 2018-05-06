@@ -45,7 +45,7 @@ namespace GraphyDb
                     }
                     else if (entityType == typeof(Relation))
                     {
-                        ((Relation)entity).RelationId = DbControl.AllocateId(DbControl.EdgePath);
+                        ((Relation)entity).RelationId = DbControl.AllocateId(DbControl.RelationPath);
                     }
                     else if (entityType == typeof(NodeProperty))
                     {
@@ -53,7 +53,7 @@ namespace GraphyDb
                     }
                     else if (entityType == typeof(RelationProperty))
                     {
-                        ((RelationProperty)entity).PropertyId = DbControl.AllocateId(DbControl.EdgePropertyPath);
+                        ((RelationProperty)entity).PropertyId = DbControl.AllocateId(DbControl.RelationPropertyPath);
                     }
                 }
 

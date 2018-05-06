@@ -12,10 +12,10 @@ namespace GraphyDb.IO
         internal static readonly TraceSource TraceSource = new TraceSource("TraceGraphyDb");
 
         internal const string NodePath = "node.storage.db";
-        internal const string EdgePath = "edge.storage.db";
+        internal const string RelationPath = "relation.storage.db";
         internal const string LabelPath = "label.storage.db";
         internal const string NodePropertyPath = "node_property.storage.db";
-        internal const string EdgePropertyPath = "edge_property.storage.db";
+        internal const string RelationPropertyPath = "relation_property.storage.db";
         internal const string PropertyNamePath = "property_name.storage.db";
         internal const string StringPath = "string.storage.db";
         internal const string ConsisterPath = "consister.log";
@@ -27,9 +27,9 @@ namespace GraphyDb.IO
             {StringPath, 34},
             {PropertyNamePath, 34},
             {NodePropertyPath, 17},
-            {EdgePropertyPath, 17},
+            {RelationPropertyPath, 17},
             {NodePath, 17},
-            {EdgePath, 33},
+            {RelationPath, 33},
             {LabelPath, 34},
             {IdStoragePath, 4}
         };
@@ -39,9 +39,9 @@ namespace GraphyDb.IO
             {StringPath, 1},
             {PropertyNamePath, 2},
             {NodePropertyPath, 3},
-            {EdgePropertyPath, 4},
+            {RelationPropertyPath, 4},
             {NodePath, 5},
-            {EdgePath, 6},
+            {RelationPath, 6},
             {LabelPath, 0}
         };
 
@@ -52,9 +52,9 @@ namespace GraphyDb.IO
         internal static List<String> DbFilePaths = new List<string>
         {
             NodePath,
-            EdgePath,
+            RelationPath,
             LabelPath,
-            EdgePropertyPath,
+            RelationPropertyPath,
             NodePropertyPath,
             PropertyNamePath,
             StringPath
@@ -166,7 +166,7 @@ namespace GraphyDb.IO
             LabelInvertedIndex.TryGetValue(label, out var labelId);
             if (labelId != 0) return labelId;
             var newLabelId = AllocateId(LabelPath);
-            DbWriter.WriteGenericStringBlock(new GenericStringBlock(LabelPath, true, label, newLabelId));
+            DbWriter.WriteStringBlock(new LabelBlock(true, label, newLabelId));
             LabelInvertedIndex[label] = labelId;
             return labelId;
         }
@@ -176,20 +176,11 @@ namespace GraphyDb.IO
             PropertyNameInvertedIndex.TryGetValue(propertyName, out var propertyId);
             if (propertyId != 0) return propertyId;
             var newPropertyNameId = AllocateId(PropertyNamePath);
-            DbWriter.WriteGenericStringBlock(new GenericStringBlock(PropertyNamePath, true, propertyName, newPropertyNameId));
+            DbWriter.WriteStringBlock(new PropertyNameBlock(true, propertyName, newPropertyNameId));
             PropertyNameInvertedIndex[propertyName] = newPropertyNameId;
             return newPropertyNameId;
         }
 
-        public static void ConsisterMonitor()
-        {
-            var th = Thread.CurrentThread;
-            th.Name = "Consister";
-            while (true)
-            {
-                //TODO Read file, fetch Entities, process entities
-                Thread.Sleep(250);
-            }
-        }
+        
     }
 }

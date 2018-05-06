@@ -126,6 +126,7 @@ namespace GraphyDb.IO
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
                     TraceSource.TraceEvent(TraceEventType.Error, 1,
                         $"Database Initialization Falied: {ex}");
                 }
@@ -143,6 +144,7 @@ namespace GraphyDb.IO
             DbFetcher.CloseIOStreams();
             idFileStream?.Dispose();
             idFileStream = null;
+            initializedIOFlag = false;
         }
 
         public static void DeleteDbFiles()

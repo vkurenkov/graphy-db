@@ -11,6 +11,7 @@ namespace GraphyDb
 
         public DbEngine()
         {
+            DbControl.InitializeIO();
             ChangedEntities = new List<Entity>();
         }
 

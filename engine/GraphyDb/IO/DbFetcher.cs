@@ -18,7 +18,7 @@ namespace GraphyDb.IO
             foreach (var filePath in DbControl.DbFilePaths)
             {
                 FetcherStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -47,7 +48,7 @@ namespace GraphyDb.IO
         };
 
         private static FileStream idFileStream;
-        internal static readonly Dictionary<string, int> IdStorageDictionary = new Dictionary<string, int>();
+        internal static readonly ConcurrentDictionary<string, int> IdStorageDictionary = new ConcurrentDictionary<string, int>();
 
         // Paths to storage files
         internal static List<String> DbFilePaths = new List<string>
@@ -61,8 +62,8 @@ namespace GraphyDb.IO
             StringPath
         };
 
-        internal static Dictionary<string, int> LabelInvertedIndex = new Dictionary<string, int>();
-        internal static Dictionary<string, int> PropertyNameInvertedIndex = new Dictionary<string, int>();
+        internal static ConcurrentDictionary<string, int> LabelInvertedIndex = new ConcurrentDictionary<string, int>();
+        internal static ConcurrentDictionary<string, int> PropertyNameInvertedIndex = new ConcurrentDictionary<string, int>();
 
         /// <summary>
         /// Create storage files if missing
@@ -114,6 +115,9 @@ namespace GraphyDb.IO
                 {
                     var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
                     LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
+                    Console.WriteLine(ex);
+                    TraceSource.TraceEvent(TraceEventType.Error, 1,
+                        $"Database Initialization Falied: {ex}");
                 }
 
                 for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
@@ -141,6 +145,7 @@ namespace GraphyDb.IO
             DbFetcher.CloseIOStreams();
             idFileStream?.Dispose();
             idFileStream = null;
+            initializedIOFlag = false;
         }
 
         public static void DeleteDbFiles()

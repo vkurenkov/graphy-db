@@ -56,14 +56,14 @@ namespace GraphyDb
             {
                 if (!propertyBlock.Used)
                 {
-                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextProperty);
+                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextPropertyId);
                     continue;
                 }
 
                 var property = new RelationProperty(this, propertyBlock);
                 Properties.Add(property.Key, property);
 
-                propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextProperty);
+                propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextPropertyId);
             }
 
 
@@ -83,12 +83,12 @@ namespace GraphyDb
 
             if (From == null)
             {
-                From = new Node(DbReader.ReadNodeBlock(relationBlock.FirstNode), Db);
+                From = new Node(DbReader.ReadNodeBlock(relationBlock.FirstNodeId), Db);
             }
 
             if (To == null)
             {
-                To = new Node(DbReader.ReadNodeBlock(relationBlock.SecondNode), Db);
+                To = new Node(DbReader.ReadNodeBlock(relationBlock.SecondNodeId), Db);
             }
         }
 

@@ -15,7 +15,7 @@ namespace GraphyDb.IO
             foreach (var filePath in DbControl.DbFilePaths)
             {
                 WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-                    FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+                    FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
             }
         }
 
@@ -45,11 +45,11 @@ namespace GraphyDb.IO
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.RelationPath]];
             Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
-            Array.Copy(BitConverter.GetBytes(e.FirstNode), 0, buffer, 1, 4);
-            Array.Copy(BitConverter.GetBytes(e.SecondNode), 0, buffer, 5, 4);
-            Array.Copy(BitConverter.GetBytes(e.FirstNodePreviousRelation), 0, buffer, 9, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstNodeId), 0, buffer, 1, 4);
+            Array.Copy(BitConverter.GetBytes(e.SecondNodeId), 0, buffer, 5, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstNodePreviousRelationId), 0, buffer, 9, 4);
             Array.Copy(BitConverter.GetBytes(e.FirstNodeNextRelation), 0, buffer, 13, 4);
-            Array.Copy(BitConverter.GetBytes(e.SecondNodePreviousRelation), 0, buffer, 17, 4);
+            Array.Copy(BitConverter.GetBytes(e.SecondNodePreviousRelationId), 0, buffer, 17, 4);
             Array.Copy(BitConverter.GetBytes(e.SecondNodeNextRelation), 0, buffer, 21, 4);
             Array.Copy(BitConverter.GetBytes(e.FirstPropertyId), 0, buffer, 25, 4);
             Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 29, 4);
@@ -105,7 +105,7 @@ namespace GraphyDb.IO
             buffer[0] = (byte) ((p.Used ? 1 : 0) + ((byte) p.PropertyType << 1));
             Array.Copy(BitConverter.GetBytes(p.PropertyNameId), 0, buffer, 1, 4);
             Array.Copy(p.Value, 0, buffer, 5, 4);
-            Array.Copy(BitConverter.GetBytes(p.NextProperty), 0, buffer, 9, 4);
+            Array.Copy(BitConverter.GetBytes(p.NextPropertyId), 0, buffer, 9, 4);
             Array.Copy(BitConverter.GetBytes(p.NodeId), 0, buffer, 13, 4);
             WriteBlock(storagePath, p.PropertyId, buffer);
         }

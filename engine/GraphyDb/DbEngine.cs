@@ -9,9 +9,9 @@ namespace GraphyDb
     {
         public List<Entity> ChangedEntities;
 
-
         public DbEngine()
         {
+            DbControl.InitializeIO();
             ChangedEntities = new List<Entity>();
         }
 

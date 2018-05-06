@@ -69,6 +69,7 @@
     <Compile Include="RelationSet.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App - Copy.config" />
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>

@@ -48,10 +48,14 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbEngine.cs" />
+    <Compile Include="NodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryTests.cs" />
+    <Compile Include="RelationTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".runsettings" />
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

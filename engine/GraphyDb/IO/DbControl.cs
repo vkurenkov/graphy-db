@@ -166,7 +166,7 @@ namespace GraphyDb.IO
             LabelInvertedIndex.TryGetValue(label, out var labelId);
             if (labelId != 0) return labelId;
             var newLabelId = AllocateId(LabelPath);
-            DbWriter.WriteGenericStringBlock(new GenericStringBlock(LabelPath, true, label, newLabelId));
+            DbWriter.WriteGenericStringBlock(new GenericStringBlock(true, label, newLabelId));
             LabelInvertedIndex[label] = labelId;
             return labelId;
         }
@@ -176,20 +176,11 @@ namespace GraphyDb.IO
             PropertyNameInvertedIndex.TryGetValue(propertyName, out var propertyId);
             if (propertyId != 0) return propertyId;
             var newPropertyNameId = AllocateId(PropertyNamePath);
-            DbWriter.WriteGenericStringBlock(new GenericStringBlock(PropertyNamePath, true, propertyName, newPropertyNameId));
+            DbWriter.WriteGenericStringBlock(new GenericStringBlock(true, propertyName, newPropertyNameId));
             PropertyNameInvertedIndex[propertyName] = newPropertyNameId;
             return newPropertyNameId;
         }
 
-        public static void ConsisterMonitor()
-        {
-            var th = Thread.CurrentThread;
-            th.Name = "Consister";
-            while (true)
-            {
-                //TODO Read file, fetch Entities, process entities
-                Thread.Sleep(250);
-            }
-        }
+        
     }
 }

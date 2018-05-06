@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
@@ -69,7 +68,17 @@ namespace GraphyDb.IO
             var used = BitConverter.ToBoolean(buffer, 0);
             var bitsUsed = buffer[1];
             var text = Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
-            return new GenericStringBlock(storagePath, used, text, id);
+            switch (storagePath)
+            {
+                case DbControl.LabelPath:
+                    return new LabelBlock(used, text, id);
+                case DbControl.StringPath:
+                    return new StringBlock(used, text, id);
+                case DbControl.PropertyNamePath:
+                    return new PropertyNameBlock(used, text, id);
+                default:
+                    throw new ArgumentException("Storage path is invalid.");
+            }
         }
 
         public static PropertyBlock ReadPropertyBlock(string storagePath, int id)
@@ -82,7 +91,15 @@ namespace GraphyDb.IO
             var propertyValue = buffer.Skip(5).Take(4).ToArray();
             var nextProperty = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
             var nodeId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
-            return new PropertyBlock(storagePath, id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
+            switch (storagePath)
+            {
+                case DbControl.NodePropertyPath:
+                    return new NodePropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
+                case DbControl.EdgePropertyPath:
+                    return new EdgePropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
+                default:
+                    throw new ArgumentException("Storage path is invalid.");
+            }
         }
 
         /// <summary>
@@ -97,7 +114,5 @@ namespace GraphyDb.IO
             ReadFileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
             ReadFileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
         }
-
-      
     }
 }

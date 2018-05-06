@@ -74,7 +74,8 @@ namespace GraphyDb
             if (From != null)
             {
                 Db = From.Db;
-            } else if (To != null)
+            }
+            else if (To != null)
             {
                 Db = To.Db;
             }
@@ -89,9 +90,7 @@ namespace GraphyDb
             {
                 To = new Node(DbReader.ReadNodeBlock(relationBlock.SecondNode), Db);
             }
-
         }
-
 
 
         public void DeleteProperty(string key)
@@ -100,7 +99,6 @@ namespace GraphyDb
             property?.Delete();
             Properties.Remove(key);
         }
-
 
 
         public object this[string key]
@@ -123,7 +121,6 @@ namespace GraphyDb
         }
 
 
-
         public bool Equals(Relation other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -136,7 +133,7 @@ namespace GraphyDb
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((Relation)obj);
+            return Equals((Relation) obj);
         }
 
         public override int GetHashCode()
@@ -153,6 +150,5 @@ namespace GraphyDb
         {
             return !Equals(left, right);
         }
-
     }
 }

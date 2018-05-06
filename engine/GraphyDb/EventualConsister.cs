@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Globalization;
 using System.Threading;
 using GraphyDb.IO;
 
@@ -47,7 +45,6 @@ namespace GraphyDb
 
                 if ((entity.State & EntityState.Added) == EntityState.Added)
                 {
-                    byte[] byteValue = new byte[4];
                     NodeBlock nodeBlock;
                     EdgeBlock relationBlock;
                     switch (entity)
@@ -98,60 +95,55 @@ namespace GraphyDb
                             DbWriter.WriteNodeBlock(nodeFrom);
                             DbWriter.WriteEdgeBlock(relationBlock);
                             break;
-                        case NodeProperty nodeProperty:
-
-                            switch (nodeProperty.PropertyType)
+                        case NodeProperty _:
+                        case RelationProperty _:
+                            var property = (Property) entity;
+                            byte[] byteValue = new byte[4];
+                            switch (property.PropertyType)
                             {
                                 case PropertyType.Int:
-                                    byteValue = BitConverter.GetBytes((int) nodeProperty.Value);
+                                    byteValue = BitConverter.GetBytes((int) property.Value);
                                     break;
                                 case PropertyType.Bool:
-                                    byteValue = BitConverter.GetBytes((bool) nodeProperty.Value);
+                                    byteValue = BitConverter.GetBytes((bool) property.Value);
                                     break;
                                 case PropertyType.Float:
-                                    byteValue = BitConverter.GetBytes((float) nodeProperty.Value);
+                                    byteValue = BitConverter.GetBytes((float) property.Value);
                                     break;
                                 case PropertyType.String:
                                     throw new NotImplementedException("String support is not available.");
                             }
 
-                            var nodeId = ((Node) nodeProperty.Parent).NodeId;
-                            var nodePropertyBlock =
-                                new NodePropertyBlock(nodeProperty.PropertyId, true, nodeProperty.PropertyType,
-                                    DbControl.FetchPropertyNameId(nodeProperty.Key),
-                                    byteValue, 0, nodeId);
-                            nodeBlock = DbReader.ReadNodeBlock(nodeId);
-                            nodeBlock.NextPropertyId = nodePropertyBlock.Id;
-                            DbWriter.WritePropertyBlock(nodePropertyBlock);
-                            DbWriter.WriteNodeBlock(nodeBlock);
-                            break;
-                        case RelationProperty relationProperty:
-//                            byte[] byteValue = new byte[4];
-
-                            switch (relationProperty.PropertyType)
+                            int parentId;
+                            PropertyBlock propertyBlock;
+                            switch (property)
                             {
-                                case PropertyType.Int:
-                                    byteValue = BitConverter.GetBytes((int) relationProperty.Value);
+                                case NodeProperty _:
+                                    parentId = ((Node) property.Parent).NodeId;
+                                    propertyBlock = new NodePropertyBlock(property.PropertyId, true,
+                                        property.PropertyType,
+                                        DbControl.FetchPropertyNameId(property.Key),
+                                        byteValue, 0, parentId);
+                                    nodeBlock = DbReader.ReadNodeBlock(parentId);
+                                    nodeBlock.NextPropertyId = propertyBlock.Id;
+                                    DbWriter.WritePropertyBlock(propertyBlock);
+                                    DbWriter.WriteNodeBlock(nodeBlock);
                                     break;
-                                case PropertyType.Bool:
-                                    byteValue = BitConverter.GetBytes((bool) relationProperty.Value);
+                                case RelationProperty _:
+                                    parentId = ((Relation) property.Parent).RelationId;
+                                    propertyBlock = new NodePropertyBlock(property.PropertyId, true,
+                                        property.PropertyType,
+                                        DbControl.FetchPropertyNameId(property.Key),
+                                        byteValue, 0, parentId);
+                                    relationBlock = DbReader.ReadEdgeBlock(parentId);
+                                    relationBlock.NextProperty = propertyBlock.NextProperty;
+                                    DbWriter.WritePropertyBlock(propertyBlock);
+                                    DbWriter.WriteEdgeBlock(relationBlock);
                                     break;
-                                case PropertyType.Float:
-                                    byteValue = BitConverter.GetBytes((float) relationProperty.Value);
-                                    break;
-                                case PropertyType.String:
-                                    throw new NotImplementedException("String support is not available.");
+                                default:
+                                    throw new ArgumentOutOfRangeException(nameof(property));
                             }
 
-                            var relationId = ((Relation) relationProperty.Parent).RelationId;
-                            var relationPropertyBlock =
-                                new EdgePropertyBlock(relationProperty.PropertyId, true, relationProperty.PropertyType,
-                                    DbControl.FetchPropertyNameId(relationProperty.Key),
-                                    byteValue, 0, relationId);
-                            relationBlock = DbReader.ReadEdgeBlock(relationId);
-                            relationBlock.NextProperty = relationPropertyBlock.NextProperty;
-                            DbWriter.WritePropertyBlock(relationPropertyBlock);
-                            DbWriter.WriteEdgeBlock(relationBlock);
                             break;
                     }
 
@@ -162,58 +154,51 @@ namespace GraphyDb
                 {
                     //                    throw new NotImplementedException("Modification is not available");
 
-                    byte[] byteValue = new byte[4];
                     switch (entity)
                     {
-                        case Node node:
+                        case Node _:
                             throw new NotSupportedException(
                                 "Node modification is not supported. Update it's properties instead.");
-                        case Relation relation:
+                        case Relation _:
                             throw new NotSupportedException(
                                 "Relation modification is not supported. Update it's properties instead.");
-                        case NodeProperty _:
+                        case NodeProperty _: //
                         case RelationProperty _:
                             var propertyPath = DbControl.EdgePropertyPath;
                             var property = (Property) entity;
                             if (property is NodeProperty) propertyPath = DbControl.NodePropertyPath;
+                            var oldPropertyBlock = DbReader.ReadPropertyBlock(propertyPath, property.PropertyId);
 
-                            var oldPropertyBlock =
-                                DbReader.ReadPropertyBlock(propertyPath, property.PropertyId);
+                            byte[] byteValue;
                             switch (property.PropertyType)
                             {
+                                case PropertyType.Int:
+                                    byteValue = BitConverter.GetBytes((int) property.Value);
+                                    break;
+                                case PropertyType.Bool:
+                                    byteValue = BitConverter.GetBytes((bool) property.Value);
+                                    break;
+                                case PropertyType.Float:
+                                    byteValue = BitConverter.GetBytes((float) property.Value);
+                                    break;
                                 case PropertyType.String:
-                                    //TODO Process strings!
-                                    break;
+                                    throw new NotImplementedException("String support is not available.");
                                 default:
-                                    switch (property.PropertyType)
-                                    {
-                                        case PropertyType.Int:
-                                            byteValue = BitConverter.GetBytes((int) property.Value);
-                                            break;
-                                        case PropertyType.Bool:
-                                            byteValue = BitConverter.GetBytes((bool) property.Value);
-                                            break;
-                                        case PropertyType.Float:
-                                            byteValue = BitConverter.GetBytes((float) property.Value);
-                                            break;
-                                        case PropertyType.String:
-                                            throw new NotImplementedException("String support is not available.");
-                                    }
-
-                                    oldPropertyBlock.Value = byteValue;
-                                    DbWriter.WritePropertyBlock(oldPropertyBlock);
-                                    break;
+                                    throw new NotSupportedException("Such Property dtye is not supported");
                             }
 
+                            oldPropertyBlock.Value = byteValue;
+                            DbWriter.WritePropertyBlock(oldPropertyBlock);
                             break;
-                        default:
-                            throw new NotSupportedException($"{typeof(entity)} is not supported!");
                     }
+
+//                            throw new NotSupportedException($"{typeof(entity)} is not supported!");
+//                    break;
                 }
-
-
-                //TODO Read file, fetch Entities, process entities
             }
+
+
+            //TODO Read file, fetch Entities, process entities
         }
     }
 }

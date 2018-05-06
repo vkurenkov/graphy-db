@@ -24,12 +24,13 @@ namespace GraphyDb.IO
         {
             WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin);
             var changedFirstByte = (byte) (WriteFileStreamDictionary[filePath].ReadByte() & 254);
-            WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
+            WriteFileStreamDictionary[filePath]
+                .Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
             WriteFileStreamDictionary[filePath].WriteByte(changedFirstByte);
             WriteFileStreamDictionary[filePath].Flush();
         }
 
-        public static void WriteNodeBlock(GraphyDb.IO.NodeBlock e)
+        public static void WriteNodeBlock(NodeBlock e)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
             Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
@@ -40,7 +41,7 @@ namespace GraphyDb.IO
             WriteBlock(DbControl.NodePath, e.NodeId, buffer);
         }
 
-        public static void WriteEdgeBlock(GraphyDb.IO.EdgeBlock e)
+        public static void WriteEdgeBlock(EdgeBlock e)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.EdgePath]];
             Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
@@ -55,9 +56,26 @@ namespace GraphyDb.IO
             WriteBlock(DbControl.EdgePath, e.EdgeId, buffer);
         }
 
-        public static void WriteGenericStringBlock(GraphyDb.IO.GenericStringBlock s)
+
+        private static void WriteStringBlock(GenericStringBlock s)
         {
-            var buffer = new byte[DbControl.BlockByteSize[s.StoragePath]];
+            string storagePath;
+            switch (s)
+            {
+                case LabelBlock _:
+                    storagePath = DbControl.LabelPath;
+                    break;
+                case StringBlock _:
+                    storagePath = DbControl.StringPath;
+                    break;
+                case PropertyNameBlock _:
+                    storagePath = DbControl.PropertyNamePath;
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported string-like block type.");
+            }
+
+            var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             Array.Copy(BitConverter.GetBytes(s.Used), buffer, 1);
             var strBytes = Encoding.UTF8.GetBytes(s.Data);
             var truncStrArray = new byte[32];
@@ -65,18 +83,31 @@ namespace GraphyDb.IO
             Array.Copy(strBytes, truncStrArray, truncationIndex);
             buffer[1] = (byte) strBytes.Length;
             Array.Copy(truncStrArray, 0, buffer, 2, truncationIndex);
-            WriteBlock(s.StoragePath, s.Id, buffer);
+            WriteBlock(storagePath, s.Id, buffer);
         }
 
-        public static void WritePropertyBlock(GraphyDb.IO.PropertyBlock p)
+        public static void WritePropertyBlock(PropertyBlock p)
         {
-            var buffer = new byte[DbControl.BlockByteSize[p.StoragePath]];
+            string storagePath;
+            switch (p)
+            {
+                case NodePropertyBlock _:
+                    storagePath = DbControl.NodePropertyPath;
+                    break;
+                case EdgePropertyBlock _:
+                    storagePath = DbControl.EdgePropertyPath;
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported property-like block type.");
+            }
+
+            var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             buffer[0] = (byte) ((p.Used ? 1 : 0) + ((byte) p.PtType << 1));
             Array.Copy(BitConverter.GetBytes(p.PropertyName), 0, buffer, 1, 4);
             Array.Copy(p.Value, 0, buffer, 5, 4);
             Array.Copy(BitConverter.GetBytes(p.NextProperty), 0, buffer, 9, 4);
             Array.Copy(BitConverter.GetBytes(p.NodeId), 0, buffer, 13, 4);
-            WriteBlock(p.StoragePath, p.Id, buffer);
+            WriteBlock(storagePath, p.Id, buffer);
         }
 
         /// <summary>

@@ -14,7 +14,8 @@ namespace GraphyDb.IO
         {
             foreach (var filePath in DbControl.DbFilePaths)
             {
-                WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath), FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
+                WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
+                    FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
             }
         }
 
@@ -80,6 +81,15 @@ namespace GraphyDb.IO
             WriteFileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
             WriteFileStreamDictionary[filePath].Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
             WriteFileStreamDictionary[filePath].Flush();
+        }
+
+        public static void CloseIOStreams()
+        {
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                WriteFileStreamDictionary?[filePath].Dispose();
+                WriteFileStreamDictionary[filePath] = null;
+            }
         }
     }
 }

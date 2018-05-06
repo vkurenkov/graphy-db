@@ -9,7 +9,18 @@ namespace GraphyDb.IO
 {
     internal static class DbReader
     {
-        public static IO.NodeBlock ReadNodeBlock(int nodeId)
+        internal static readonly Dictionary<string, FileStream>
+            ReadFileStreamDictionary = new Dictionary<string, FileStream>();
+
+        internal static void InitializeDbReader()
+        {
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                ReadFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath), FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
+            }
+        }
+
+        public static NodeBlock ReadNodeBlock(int nodeId)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
             ReadBlock(DbControl.NodePath, nodeId, buffer);
@@ -21,11 +32,11 @@ namespace GraphyDb.IO
             return new NodeBlock(used, nodeId, firstInRelationId, firstOutRelationId, nextPropertyId, labelId);
         }
 
-        public static IO.EdgeBlock ReadEdgeBlock(int edgeId)
+        public static EdgeBlock ReadEdgeBlock(int edgeId)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.EdgePath]];
             ReadBlock(DbControl.EdgePath, edgeId, buffer);
-            IO.EdgeBlock e = new EdgeBlock
+            EdgeBlock e = new EdgeBlock
             {
                 Used = BitConverter.ToBoolean(buffer, 0),
                 FirstNode = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
@@ -40,17 +51,17 @@ namespace GraphyDb.IO
             return e;
         }
 
-        public static IO.GenericStringBlock ReadGenericStringBlock(string storagePath, int id)
+        public static GenericStringBlock ReadGenericStringBlock(string storagePath, int id)
         {
             var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
             var used = BitConverter.ToBoolean(buffer, 0);
             var bitsUsed = buffer[1];
-            var text = System.Text.Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
+            var text = Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
             return new GenericStringBlock(storagePath, used, text, id);
         }
 
-        public static IO.PropertyBlock ReadPropertyBlock(string storagePath, int id)
+        public static PropertyBlock ReadPropertyBlock(string storagePath, int id)
         {
             var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
@@ -71,9 +82,9 @@ namespace GraphyDb.IO
         /// <param name="block"> Buffer to which result is written</param>
         public static void ReadBlock(string filePath, int blockNumber, byte[] block)
         {
-            int offset = blockNumber * DbControl.BlockByteSize[filePath];
-            DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            DbControl.FileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
+            var offset = blockNumber * DbControl.BlockByteSize[filePath];
+            ReadFileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            ReadFileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
         }
     }
 }

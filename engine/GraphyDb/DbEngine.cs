@@ -2,7 +2,7 @@
 
 namespace GraphyDb
 {
-    public class UnitOfWork
+    public class DbEngine
     {
 
         public List<Entity> ChangedEntities;

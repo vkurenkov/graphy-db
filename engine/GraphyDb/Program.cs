@@ -17,7 +17,7 @@ namespace GraphyDb
         {
             Trace.AutoFlush = true;
 
-            IO.DbControl.InitializeDatabase();
+            IO.DbControl.InitializeIO();
 
             DbWriter.WriteGenericStringBlock(new LabelBlock(true, "Branda", 1));
             DbWriter.WriteGenericStringBlock(new PropertyNameBlock(true, "Chandra", 1));

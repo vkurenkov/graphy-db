@@ -81,5 +81,14 @@ namespace GraphyDb.IO
             WriteFileStreamDictionary[filePath].Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
             WriteFileStreamDictionary[filePath].Flush();
         }
+
+        public static void CloseIOStreams()
+        {
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                WriteFileStreamDictionary?[filePath].Dispose();
+                WriteFileStreamDictionary[filePath] = null;
+            }
+        }
     }
 }

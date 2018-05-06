@@ -118,6 +118,23 @@ namespace GraphyDb.IO
             }
         }
 
+        public static void ShutdownIO()
+        {
+            DbReader.CloseIOStreams();
+            DbWriter.CloseIOStreams();
+            idFileStream?.Dispose();
+            idFileStream = null;
+        }
+
+        public static void DeleteDbFiles()
+        {
+            ShutdownIO();
+            foreach (var filePath in DbFilePaths)
+            {
+                File.Delete(Path.Combine(DbPath, filePath));
+            }
+            File.Delete(Path.Combine(DbPath, IdStoragePath));
+        }
 
         public static void ConsisterMonitor()
         {

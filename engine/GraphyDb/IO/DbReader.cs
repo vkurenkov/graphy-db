@@ -20,6 +20,16 @@ namespace GraphyDb.IO
             }
         }
 
+        internal static void CloseIOStreams()
+        {
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                ReadFileStreamDictionary?[filePath].Dispose();
+                ReadFileStreamDictionary[filePath] = null;
+            }
+        }
+
+
         public static NodeBlock ReadNodeBlock(int nodeId)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];

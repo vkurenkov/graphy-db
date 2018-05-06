@@ -50,7 +50,7 @@ namespace GraphyDb.IO
             var buffer = new byte[DbControl.BlockByteSize[p.StoragePath]];
             buffer[0] = (byte) ((p.Used ? 1 : 0) + ((byte) p.PtType << 1));
             Array.Copy(BitConverter.GetBytes(p.PropertyName), 0, buffer, 1, 4);
-            Array.Copy(BitConverter.GetBytes(p.Value), 0, buffer, 5, 4);
+            Array.Copy(p.Value, 0, buffer, 5, 4);
             Array.Copy(BitConverter.GetBytes(p.NextProperty), 0, buffer, 9, 4);
             Array.Copy(BitConverter.GetBytes(p.NodeId), 0, buffer, 13, 4);
             WriteBlock(p.StoragePath, p.Id, buffer);

@@ -183,11 +183,11 @@ namespace GraphyDb.IO
         public bool Used;
         public PropertyType PtType;
         public int PropertyName;
-        public int Value;
+        public byte[] Value;
         public int NextProperty;
         public int NodeId;
 
-        public PropertyBlock(string storagePath, int id, bool used, PropertyType ptType, int propertyName, int value,
+        public PropertyBlock(string storagePath, int id, bool used, PropertyType ptType, int propertyName, byte[] value,
             int nextProperty, int nodeId)
         {
             StoragePath = storagePath;
@@ -220,7 +220,7 @@ namespace GraphyDb.IO
             this.StoragePath = DbControl.NodePropertyPath;
         }
 
-        public NodePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, int value, int nextProperty,
+        public NodePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, byte[] value, int nextProperty,
             int nodeId) : base(DbControl.NodePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
         {
         }
@@ -233,7 +233,7 @@ namespace GraphyDb.IO
             this.StoragePath = DbControl.EdgePropertyPath;
         }
 
-        public EdgePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, int value, int nextProperty,
+        public EdgePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, byte[] value, int nextProperty,
             int nodeId) : base(DbControl.EdgePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
         {
         }

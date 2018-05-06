@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
-    class DbReader
+    internal static class DbReader
     {
         public static IO.NodeBlock ReadNodeBlock(int nodeId)
         {
@@ -57,7 +57,7 @@ namespace GraphyDb.IO
             var used = buffer[0] % 2 == 1;
             var dtype = (PropertyType) (buffer[0] >> 1);
             var propertyName = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
-            var propertyValue = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
+            var propertyValue =buffer.Skip(5).Take(4).ToArray();
             var nextProperty = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
             var nodeId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
             return new PropertyBlock(storagePath, id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);

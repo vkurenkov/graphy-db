@@ -37,7 +37,8 @@ namespace GraphyDb
                     }
                     else if (entityType == typeof(RelationProperty))
                     {
-                        DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, ((RelationProperty) entity).PropertyId);
+                        DbWriter.InvalidateBlock(DbControl.RelationPropertyPath,
+                            ((RelationProperty) entity).PropertyId);
                     }
 
                     continue;
@@ -58,41 +59,43 @@ namespace GraphyDb
                             relationBlock = new RelationBlock
                             {
                                 Used = true,
-                                FirstNode = relation.From.NodeId,
-                                SecondNode = relation.To.NodeId,
-                                FirstNodePreviousRelation = 0,
-                                SecondNodePreviousRelation = 0,
+                                FirstNodeId = relation.From.NodeId,
+                                SecondNodeId = relation.To.NodeId,
+                                FirstNodePreviousRelationId = 0,
+                                SecondNodePreviousRelationId = 0,
                                 LabelId = DbControl.FetchLabelId(relation.Label),
                                 FirstPropertyId = 0
                             };
 
                             // Read Source, Target nodes to change the links in them and get their current links
-                            var nodeFrom = DbReader.ReadNodeBlock(relationBlock.FirstNode);
-                            var nodeTo = DbReader.ReadNodeBlock(relationBlock.SecondNode);
+                            var fromNodeBlock = DbReader.ReadNodeBlock(relationBlock.FirstNodeId);
+                            var toNodeBlock = DbReader.ReadNodeBlock(relationBlock.SecondNodeId);
 
                             // Point to the current relations
-                            relationBlock.FirstNodeNextRelation = nodeFrom.FirstOutRelationId;
-                            relationBlock.SecondNodeNextRelation = nodeTo.FirstInRelationId;
+                            relationBlock.FirstNodeNextRelation = fromNodeBlock.FirstOutRelationId;
+                            relationBlock.SecondNodeNextRelation = toNodeBlock.FirstInRelationId;
 
                             // Read Relations to which nodes point to update them
-                            if (nodeFrom.FirstOutRelationId != 0)
+                            if (fromNodeBlock.FirstOutRelationId != 0)
                             {
-                                var nodeFromFirstOutRelationBlock = DbReader.ReadRelationBlock(nodeFrom.FirstOutRelationId);
-                                nodeFromFirstOutRelationBlock.FirstNodePreviousRelation = relation.RelationId;
-                                DbWriter.WriteRelationBlock(nodeFromFirstOutRelationBlock);
+                                var fromNodeFirstOutRelationBlock =
+                                    DbReader.ReadRelationBlock(fromNodeBlock.FirstOutRelationId);
+                                fromNodeFirstOutRelationBlock.FirstNodePreviousRelationId = relation.RelationId;
+                                DbWriter.WriteRelationBlock(fromNodeFirstOutRelationBlock);
                             }
 
-                            if (nodeTo.FirstInRelationId != 0)
+                            if (toNodeBlock.FirstInRelationId != 0)
                             {
-                                var nodeToFirstInRelationBlock = DbReader.ReadRelationBlock(nodeTo.FirstInRelationId);
-                                nodeToFirstInRelationBlock.SecondNodePreviousRelation = relation.RelationId;
-                                DbWriter.WriteRelationBlock(nodeToFirstInRelationBlock);
+                                var toNodeFirstInRelationBlock =
+                                    DbReader.ReadRelationBlock(toNodeBlock.FirstInRelationId);
+                                toNodeFirstInRelationBlock.SecondNodePreviousRelationId = relation.RelationId;
+                                DbWriter.WriteRelationBlock(toNodeFirstInRelationBlock);
                             }
 
-                            nodeTo.FirstInRelationId = relation.RelationId;
-                            nodeFrom.FirstOutRelationId = relation.RelationId;
-                            DbWriter.WriteNodeBlock(nodeTo);
-                            DbWriter.WriteNodeBlock(nodeFrom);
+                            toNodeBlock.FirstInRelationId = relation.RelationId;
+                            fromNodeBlock.FirstOutRelationId = relation.RelationId;
+                            DbWriter.WriteNodeBlock(toNodeBlock);
+                            DbWriter.WriteNodeBlock(fromNodeBlock);
                             DbWriter.WriteRelationBlock(relationBlock);
                             break;
                         case NodeProperty _:
@@ -105,7 +108,7 @@ namespace GraphyDb
                                     byteValue = BitConverter.GetBytes((int) property.Value);
                                     break;
                                 case PropertyType.Bool:
-                                    byteValue = BitConverter.GetBytes((bool) property.Value);
+                                    byteValue[3] = (byte) ((bool) property.Value ? 1 : 0);
                                     break;
                                 case PropertyType.Float:
                                     byteValue = BitConverter.GetBytes((float) property.Value);
@@ -125,23 +128,25 @@ namespace GraphyDb
                                         DbControl.FetchPropertyNameId(property.Key),
                                         byteValue, 0, parentId);
                                     nodeBlock = DbReader.ReadNodeBlock(parentId);
+                                    propertyBlock.NextPropertyId = nodeBlock.FirstPropertyId;
                                     nodeBlock.FirstPropertyId = propertyBlock.PropertyId;
                                     DbWriter.WritePropertyBlock(propertyBlock);
                                     DbWriter.WriteNodeBlock(nodeBlock);
                                     break;
                                 case RelationProperty _:
                                     parentId = ((Relation) property.Parent).RelationId;
-                                    propertyBlock = new NodePropertyBlock(property.PropertyId, true,
+                                    propertyBlock = new RelationPropertyBlock(property.PropertyId, true,
                                         property.PropertyType,
                                         DbControl.FetchPropertyNameId(property.Key),
                                         byteValue, 0, parentId);
                                     relationBlock = DbReader.ReadRelationBlock(parentId);
-                                    relationBlock.FirstPropertyId = propertyBlock.NextProperty;
+                                    propertyBlock.NextPropertyId = relationBlock.FirstPropertyId;
+                                    relationBlock.FirstPropertyId = propertyBlock.PropertyId;
                                     DbWriter.WritePropertyBlock(propertyBlock);
                                     DbWriter.WriteRelationBlock(relationBlock);
                                     break;
                                 default:
-                                    throw new ArgumentOutOfRangeException(nameof(property));
+                                    throw new NotSupportedException();
                             }
 
                             break;
@@ -152,8 +157,6 @@ namespace GraphyDb
 
                 if ((entity.State & EntityState.Modified) == EntityState.Modified)
                 {
-                    //                    throw new NotImplementedException("Modification is not available");
-
                     switch (entity)
                     {
                         case Node _:
@@ -164,19 +167,18 @@ namespace GraphyDb
                                 "Relation modification is not supported. Update it's properties instead.");
                         case NodeProperty _: //
                         case RelationProperty _:
-                            var propertyPath = DbControl.RelationPropertyPath;
                             var property = (Property) entity;
-                            if (property is NodeProperty) propertyPath = DbControl.NodePropertyPath;
+                            var propertyPath = (property is NodeProperty) ? DbControl.NodePropertyPath : DbControl.RelationPropertyPath;
                             var oldPropertyBlock = DbReader.ReadPropertyBlock(propertyPath, property.PropertyId);
 
-                            byte[] byteValue;
+                            byte[] byteValue = new byte[4];
                             switch (property.PropertyType)
                             {
                                 case PropertyType.Int:
                                     byteValue = BitConverter.GetBytes((int) property.Value);
                                     break;
                                 case PropertyType.Bool:
-                                    byteValue = BitConverter.GetBytes((bool) property.Value);
+                                    byteValue[3] = (byte) ((bool) property.Value ? 1 : 0);
                                     break;
                                 case PropertyType.Float:
                                     byteValue = BitConverter.GetBytes((float) property.Value);
@@ -192,13 +194,9 @@ namespace GraphyDb
                             break;
                     }
 
-//                            throw new NotSupportedException($"{typeof(entity)} is not supported!");
-//                    break;
                 }
             }
 
-
-            //TODO Read file, fetch Entities, process entities
         }
     }
 }

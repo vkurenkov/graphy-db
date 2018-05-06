@@ -56,14 +56,14 @@ namespace GraphyDb
             {
                 if (!propertyBlock.Used)
                 {
-                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextProperty);
+                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextPropertyId);
                     continue;
                 }
 
                 var property = new NodeProperty(this, propertyBlock);
                 Properties.Add(property.Key, property);
 
-                propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextProperty);
+                propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextPropertyId);
             }
 
 

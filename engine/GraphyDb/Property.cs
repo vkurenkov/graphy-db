@@ -58,9 +58,9 @@ namespace GraphyDb
             Parent = parent;
             Db = parent.Db;
 
-            Key = DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, propertyBlock.PropertyName).Data;
+            Key = DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, propertyBlock.PropertyNameId).Data;
 
-            switch (propertyBlock.PtType)
+            switch (propertyBlock.PropertyType)
             {
                 case PropertyType.Int:
                     value = BitConverter.ToInt32(propertyBlock.Value, 0);

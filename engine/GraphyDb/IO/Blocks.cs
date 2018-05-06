@@ -182,19 +182,19 @@ namespace GraphyDb.IO
         public int Id;
         public bool Used;
         public PropertyType PropertyType;
-        public int PropertyName;
+        public int PropertyNameId;
         public byte[] Value;
         public int NextProperty;
         public int NodeId;
 
-        public PropertyBlock(string storagePath, int id, bool used, PropertyType propertyType, int propertyName, byte[] value,
+        public PropertyBlock(string storagePath, int id, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
             int nextProperty, int nodeId)
         {
             StoragePath = storagePath;
             Id = id;
             Used = used;
             PropertyType = propertyType;
-            PropertyName = propertyName;
+            PropertyNameId = propertyNameId;
             Value = value;
             NextProperty = nextProperty;
             NodeId = nodeId;
@@ -205,7 +205,7 @@ namespace GraphyDb.IO
             this.StoragePath = other.StoragePath;
             this.Id = other.Id;
             this.NextProperty = other.NextProperty;
-            this.PropertyName = other.PropertyName;
+            this.PropertyNameId = other.PropertyNameId;
             this.NodeId = other.NodeId;
             this.PropertyType = other.PropertyType;
             this.Used = other.Used;
@@ -220,8 +220,8 @@ namespace GraphyDb.IO
             this.StoragePath = DbControl.NodePropertyPath;
         }
 
-        public NodePropertyBlock(int id, bool used, PropertyType propertyType, int propertyName, byte[] value, int nextProperty,
-            int nodeId) : base(DbControl.NodePropertyPath, id, used, propertyType, propertyName, value, nextProperty, nodeId)
+        public NodePropertyBlock(int id, bool used, PropertyType propertyType, int propertyNameId, byte[] value, int nextProperty,
+            int nodeId) : base(DbControl.NodePropertyPath, id, used, propertyType, propertyNameId, value, nextProperty, nodeId)
         {
         }
     }
@@ -233,8 +233,8 @@ namespace GraphyDb.IO
             this.StoragePath = DbControl.EdgePropertyPath;
         }
 
-        public EdgePropertyBlock(int id, bool used, PropertyType propertyType, int propertyName, byte[] value, int nextProperty,
-            int nodeId) : base(DbControl.EdgePropertyPath, id, used, propertyType, propertyName, value, nextProperty, nodeId)
+        public EdgePropertyBlock(int id, bool used, PropertyType propertyType, int propertyNameId, byte[] value, int nextProperty,
+            int nodeId) : base(DbControl.EdgePropertyPath, id, used, propertyType, propertyNameId, value, nextProperty, nodeId)
         {
         }
     }

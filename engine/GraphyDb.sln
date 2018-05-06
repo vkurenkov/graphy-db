@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphyDb", "GraphyDb\GraphyDb.csproj", "{349E741D-A12F-4B03-A3B1-8704F9FFD478}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphyDbTests", "GraphyDbTests\GraphyDbTests.csproj", "{A5091AFA-1D6E-49AC-BF38-9B28BF8FAFAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{349E741D-A12F-4B03-A3B1-8704F9FFD478}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{349E741D-A12F-4B03-A3B1-8704F9FFD478}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{349E741D-A12F-4B03-A3B1-8704F9FFD478}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5091AFA-1D6E-49AC-BF38-9B28BF8FAFAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5091AFA-1D6E-49AC-BF38-9B28BF8FAFAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5091AFA-1D6E-49AC-BF38-9B28BF8FAFAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5091AFA-1D6E-49AC-BF38-9B28BF8FAFAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

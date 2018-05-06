@@ -18,7 +18,6 @@ namespace GraphyDb
 
         private readonly NodeBlock nodeBlock;
 
-
         public Node(string label, DbEngine db, EntityState state)
         {
             NodeId = 0;

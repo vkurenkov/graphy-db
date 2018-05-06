@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using GraphyDb.IO;
 
 namespace GraphyDb
 {
     public class DbEngine
     {
-
         public List<Entity> ChangedEntities;
-
 
         public DbEngine(List<Entity> changedEntities)
         {
@@ -25,14 +24,11 @@ namespace GraphyDb
             return new Relation(from, to, label, EntityState.Added);
         }
 
-
         public void Delete(Entity entity)
         {
             entity.State = EntityState.Deleted;
             entity.Db.ChangedEntities.Add(entity);
         }
-
-
 
         public void SaveChanges()
         {
@@ -44,7 +40,7 @@ namespace GraphyDb
 
                     if (entityType == typeof(Node))
                     {
-                        ((Node) entity).NodeId = DbControl.AllocateId(DbControl.NodePath);
+                        ((Node)entity).NodeId = DbControl.AllocateId(DbControl.NodePath);
                     }
                     else if (entityType == typeof(Relation))
                     {
@@ -67,6 +63,9 @@ namespace GraphyDb
             ChangedEntities.Clear();
         }
 
-
+        public void DropDatabase()
+        {
+            DbControl.DeleteDbFiles();
+        }
     }
 }

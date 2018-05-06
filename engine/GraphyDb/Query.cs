@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GraphyDb
 {
@@ -44,7 +45,9 @@ namespace GraphyDb
             return result;
         }
 
-
-
+        public void Execute()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

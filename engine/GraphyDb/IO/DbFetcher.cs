@@ -35,36 +35,35 @@ namespace GraphyDb.IO
             int labelId)
         {
             var interimNodes = new Dictionary<int, HashSet<NodeBlock>>();
-            foreach (KeyValuePair<int, byte[]> entry in propertyKeyValue)
+            foreach (var entry in propertyKeyValue)
                 interimNodes[entry.Key] = new HashSet<NodeBlock>();
             var propertyKeys = new HashSet<int>(interimNodes.Keys);
             var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
-            for (int propBlockIndex = 1; propBlockIndex < lastPropertyId; ++propBlockIndex)
+            for (var propBlockIndex = 1; propBlockIndex < lastPropertyId; ++propBlockIndex)
             {
                 var currentNodePropertyBlock =
                     new NodePropertyBlock(DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propBlockIndex));
 
-                if (propertyKeys.Contains(currentNodePropertyBlock.PropertyName))
-                {
-                    if (BitConverter.ToInt32(currentNodePropertyBlock.Value, 0) ==
-                        BitConverter.ToInt32(propertyKeyValue[currentNodePropertyBlock.Id], 0))
-                    {
-                        var currentNodeBlock = DbReader.ReadNodeBlock(currentNodePropertyBlock.NodeId);
-                        if (currentNodeBlock.LabelId == labelId)
-                            interimNodes[currentNodePropertyBlock.Id].Add(currentNodeBlock);
-                    }
-                }
+                if (!propertyKeys.Contains(currentNodePropertyBlock.PropertyName)) continue;
+
+                if (BitConverter.ToInt32(currentNodePropertyBlock.Value, 0) !=
+                    BitConverter.ToInt32(propertyKeyValue[currentNodePropertyBlock.Id], 0)) continue;
+
+                var currentNodeBlock = DbReader.ReadNodeBlock(currentNodePropertyBlock.NodeId);
+                if (currentNodeBlock.LabelId != labelId) continue;
+
+                interimNodes[currentNodePropertyBlock.Id].Add(currentNodeBlock);
             }
 
             var listOfSets = new List<HashSet<NodeBlock>>(interimNodes.Values);
 
             var outputNodes = listOfSets.Aggregate(
-                    (h, e) =>
-                    {
-                        h.IntersectWith(e);
-                        return h;
-                    }
-                );
+                (h, e) =>
+                {
+                    h.IntersectWith(e);
+                    return h;
+                }
+            );
 
             return outputNodes;
         }

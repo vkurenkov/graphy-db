@@ -15,7 +15,7 @@ namespace GraphyDb.IO
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((NodeBlock) obj);
         }
 
@@ -38,30 +38,29 @@ namespace GraphyDb.IO
         public int NodeId;
         public int FirstInRelationId;
         public int FirstOutRelationId;
-        public int NextPropertyId;
+        public int FirstPropertyId;
         public int LabelId;
 
-        public NodeBlock(bool used, int nodeId, int firstInRelationId, int firstOutRelationId,  int nextPropertyId, int labelId)
+        public NodeBlock(bool used, int nodeId, int firstInRelationId, int firstOutRelationId, int firstPropertyId,
+            int labelId)
         {
             Used = used;
             NodeId = nodeId;
             FirstInRelationId = firstInRelationId;
-            NextPropertyId = nextPropertyId;
+            FirstPropertyId = firstPropertyId;
             FirstOutRelationId = firstOutRelationId;
             LabelId = labelId;
         }
     }
 
-    public class GenericStringBlock
+    public abstract class GenericStringBlock
     {
-        public string StoragePath;
         public bool Used;
         public string Data;
         public int Id;
 
-        public GenericStringBlock(string storagePath, bool used, string data, int id)
+        public GenericStringBlock(bool used, string data, int id)
         {
-            StoragePath = storagePath;
             Used = used;
             Data = data;
             Id = id;
@@ -69,10 +68,9 @@ namespace GraphyDb.IO
 
         protected GenericStringBlock(GenericStringBlock other)
         {
-            this.StoragePath = other.StoragePath;
-            this.Used = other.Used;
-            this.Data = other.Data;
-            this.Id = other.Id;
+            Used = other.Used;
+            Data = other.Data;
+            Id = other.Id;
         }
     }
 
@@ -80,10 +78,9 @@ namespace GraphyDb.IO
     {
         public LabelBlock(GenericStringBlock genericStringBlock) : base(genericStringBlock)
         {
-            this.StoragePath = DbControl.LabelPath;
         }
 
-        public LabelBlock(bool used, string data, int id) : base(DbControl.LabelPath, used, data, id)
+        public LabelBlock(bool used, string data, int id) : base(used, data, id)
         {
         }
     }
@@ -92,10 +89,9 @@ namespace GraphyDb.IO
     {
         public PropertyNameBlock(GenericStringBlock genericStringBlock) : base(genericStringBlock)
         {
-            this.StoragePath = DbControl.PropertyNamePath;
         }
 
-        public PropertyNameBlock(bool used, string data, int id) : base(DbControl.PropertyNamePath, used, data, id)
+        public PropertyNameBlock(bool used, string data, int id) : base(used, data, id)
         {
         }
     }
@@ -104,42 +100,41 @@ namespace GraphyDb.IO
     {
         public StringBlock(GenericStringBlock genericStringBlock) : base(genericStringBlock)
         {
-            this.StoragePath = DbControl.StringPath;
         }
 
-        public StringBlock(bool used, string data, int id) : base(DbControl.StringPath, used, data, id)
+        public StringBlock(bool used, string data, int id) : base(used, data, id)
         {
         }
     }
 
-    public class EdgeBlock : IEquatable<EdgeBlock>
+    public class RelationBlock : IEquatable<RelationBlock>
     {
-        public bool Equals(EdgeBlock other)
+        public bool Equals(RelationBlock other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return EdgeId == other.EdgeId;
+            return RelationId == other.RelationId;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((EdgeBlock) obj);
+            if (obj.GetType() != GetType()) return false;
+            return Equals((RelationBlock) obj);
         }
 
         public override int GetHashCode()
         {
-            return EdgeId;
+            return RelationId;
         }
 
-        public static bool operator ==(EdgeBlock left, EdgeBlock right)
+        public static bool operator ==(RelationBlock left, RelationBlock right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(EdgeBlock left, EdgeBlock right)
+        public static bool operator !=(RelationBlock left, RelationBlock right)
         {
             return !Equals(left, right);
         }
@@ -151,17 +146,17 @@ namespace GraphyDb.IO
         public int FirstNodeNextRelation;
         public int SecondNodePreviousRelation;
         public int SecondNodeNextRelation;
-        public int NextProperty;
+        public int FirstPropertyId;
         public int LabelId;
-        public int EdgeId;
+        public int RelationId;
 
-        public EdgeBlock()
+        public RelationBlock()
         {
         }
 
-        public EdgeBlock(bool used, int firstNode, int secondNode, int firstNodePreviousRelation,
-            int firstNodeNextRelation, int secondNodePreviousRelation, int secondNodeNextRelation, int nextProperty,
-            int labelId, int edgeId)
+        public RelationBlock(bool used, int firstNode, int secondNode, int firstNodePreviousRelation,
+            int firstNodeNextRelation, int secondNodePreviousRelation, int secondNodeNextRelation, int firstPropertyId,
+            int labelId, int relationId)
         {
             Used = used;
             FirstNode = firstNode;
@@ -170,46 +165,43 @@ namespace GraphyDb.IO
             FirstNodeNextRelation = firstNodeNextRelation;
             SecondNodePreviousRelation = secondNodePreviousRelation;
             SecondNodeNextRelation = secondNodeNextRelation;
-            NextProperty = nextProperty;
+            FirstPropertyId = firstPropertyId;
             LabelId = labelId;
-            EdgeId = edgeId;
+            RelationId = relationId;
         }
     }
 
-    public class PropertyBlock
+    public abstract class PropertyBlock
     {
-        public string StoragePath;
-        public int Id;
+        public int PropertyId;
         public bool Used;
-        public PropertyType PtType;
-        public int PropertyName;
+        public PropertyType PropertyType;
+        public int PropertyNameId;
         public byte[] Value;
         public int NextProperty;
         public int NodeId;
 
-        public PropertyBlock(string storagePath, int id, bool used, PropertyType ptType, int propertyName, byte[] value,
+        protected PropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
             int nextProperty, int nodeId)
         {
-            StoragePath = storagePath;
-            Id = id;
+            PropertyId = propertyId;
             Used = used;
-            PtType = ptType;
-            PropertyName = propertyName;
+            PropertyType = propertyType;
+            PropertyNameId = propertyNameId;
             Value = value;
             NextProperty = nextProperty;
             NodeId = nodeId;
         }
 
-        public PropertyBlock(PropertyBlock other)
+        protected PropertyBlock(PropertyBlock other)
         {
-            this.StoragePath = other.StoragePath;
-            this.Id = other.Id;
-            this.NextProperty = other.NextProperty;
-            this.PropertyName = other.PropertyName;
-            this.NodeId = other.NodeId;
-            this.PtType = other.PtType;
-            this.Used = other.Used;
-            this.Value = other.Value;
+            PropertyId = other.PropertyId;
+            NextProperty = other.NextProperty;
+            PropertyNameId = other.PropertyNameId;
+            NodeId = other.NodeId;
+            PropertyType = other.PropertyType;
+            Used = other.Used;
+            Value = other.Value;
         }
     }
 
@@ -217,24 +209,25 @@ namespace GraphyDb.IO
     {
         public NodePropertyBlock(PropertyBlock other) : base(other)
         {
-            this.StoragePath = DbControl.NodePropertyPath;
         }
 
-        public NodePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, byte[] value, int nextProperty,
-            int nodeId) : base(DbControl.NodePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
+
+        public NodePropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
+            int nextProperty,
+            int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextProperty, nodeId)
         {
         }
     }
 
-    public class EdgePropertyBlock : PropertyBlock
+    public class RelationPropertyBlock : PropertyBlock
     {
-        public EdgePropertyBlock(PropertyBlock other) : base(other)
+        public RelationPropertyBlock(PropertyBlock other) : base(other)
         {
-            this.StoragePath = DbControl.EdgePropertyPath;
         }
 
-        public EdgePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, byte[] value, int nextProperty,
-            int nodeId) : base(DbControl.EdgePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
+        public RelationPropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
+            int nextProperty,
+            int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextProperty, nodeId)
         {
         }
     }

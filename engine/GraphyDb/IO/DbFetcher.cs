@@ -31,31 +31,85 @@ namespace GraphyDb.IO
             }
         }
 
-        public static HashSet<NodeBlock> SelectNodesByLabelAndProperty(Dictionary<int, byte[]> propertyKeyValue,
-            int labelId)
+
+        // todo: review
+        public static HashSet<NodeBlock> SelectNodeBlocksByLabelAndProperties(string label,
+            Dictionary<string, object> props)
         {
-            var interimNodes = new Dictionary<int, HashSet<NodeBlock>>();
-            foreach (var entry in propertyKeyValue)
-                interimNodes[entry.Key] = new HashSet<NodeBlock>();
-            var propertyKeys = new HashSet<int>(interimNodes.Keys);
-            var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
-            for (var propBlockIndex = 1; propBlockIndex < lastPropertyId; ++propBlockIndex)
+            bool ok = DbControl.LabelInvertedIndex.TryGetValue(label, out var labelId);
+
+            if (!ok)
             {
-                var currentNodePropertyBlock =
-                    new NodePropertyBlock(DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propBlockIndex));
-
-                if (!propertyKeys.Contains(currentNodePropertyBlock.PropertyName)) continue;
-
-                if (BitConverter.ToInt32(currentNodePropertyBlock.Value, 0) !=
-                    BitConverter.ToInt32(propertyKeyValue[currentNodePropertyBlock.Id], 0)) continue;
-
-                var currentNodeBlock = DbReader.ReadNodeBlock(currentNodePropertyBlock.NodeId);
-                if (currentNodeBlock.LabelId != labelId) continue;
-
-                interimNodes[currentNodePropertyBlock.Id].Add(currentNodeBlock);
+                return new HashSet<NodeBlock>();
             }
 
-            var listOfSets = new List<HashSet<NodeBlock>>(interimNodes.Values);
+
+            var rawProps = new Dictionary<int, object>();
+
+
+            var fromPropNameIdToGoodNodeBlocks = new Dictionary<int, HashSet<NodeBlock>>();
+
+
+            foreach (var keyValuePair in props)
+            {
+                ok = DbControl.PropertyNameInvertedIndex.TryGetValue(keyValuePair.Key, out var propertyNameId);
+                if (!ok)
+                {
+                    return new HashSet<NodeBlock>();
+                }
+
+                fromPropNameIdToGoodNodeBlocks[propertyNameId] = new HashSet<NodeBlock>();
+                rawProps[propertyNameId] = keyValuePair.Value;
+            }
+
+            var propertyNameIds = new HashSet<int>(fromPropNameIdToGoodNodeBlocks.Keys);
+
+
+            var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
+            for (var propertyId = 1; propertyId < lastPropertyId; ++propertyId)
+            {
+                var currentPropertyBlock =
+                    new NodePropertyBlock(DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyId));
+                if (!currentPropertyBlock.Used)
+                    continue;
+
+                if (!propertyNameIds.Contains(currentPropertyBlock.PropertyNameId)) continue;
+
+
+                switch (currentPropertyBlock.PropertyType)
+                {
+                    case PropertyType.Int:
+                        if (BitConverter.ToInt32(currentPropertyBlock.Value, 0) !=
+                            (int) rawProps[currentPropertyBlock.PropertyNameId])
+                            continue;
+                        break;
+                    case PropertyType.String:
+                        if (DbReader.ReadGenericStringBlock(DbControl.StringPath,
+                                BitConverter.ToInt32(currentPropertyBlock.Value, 0)).Data !=
+                            (string) rawProps[currentPropertyBlock.PropertyNameId])
+                            continue;
+                        break;
+                    case PropertyType.Bool:
+                        if (BitConverter.ToBoolean(currentPropertyBlock.Value, 3) !=
+                            (bool) rawProps[currentPropertyBlock.PropertyNameId])
+                            continue;
+                        break;
+                    case PropertyType.Float:
+                        if (BitConverter.ToSingle(currentPropertyBlock.Value, 0) !=
+                            (float) rawProps[currentPropertyBlock.PropertyNameId])
+                            continue;
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+
+                var currentNodeBlock = DbReader.ReadNodeBlock(currentPropertyBlock.NodeId);
+                if (currentNodeBlock.LabelId != labelId) continue;
+
+                fromPropNameIdToGoodNodeBlocks[currentPropertyBlock.PropertyNameId].Add(currentNodeBlock);
+            }
+
+            var listOfSets = new List<HashSet<NodeBlock>>(fromPropNameIdToGoodNodeBlocks.Values);
 
             var outputNodes = listOfSets.Aggregate(
                 (h, e) =>

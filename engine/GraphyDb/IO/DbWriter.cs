@@ -24,25 +24,26 @@ namespace GraphyDb.IO
         {
             WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin);
             var changedFirstByte = (byte) (WriteFileStreamDictionary[filePath].ReadByte() & 254);
-            WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
+            WriteFileStreamDictionary[filePath]
+                .Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
             WriteFileStreamDictionary[filePath].WriteByte(changedFirstByte);
             WriteFileStreamDictionary[filePath].Flush();
         }
 
-        public static void WriteNodeBlock(GraphyDb.IO.NodeBlock e)
+        public static void WriteNodeBlock(NodeBlock e)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
             Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
             Array.Copy(BitConverter.GetBytes(e.FirstInRelationId), 0, buffer, 1, 4);
             Array.Copy(BitConverter.GetBytes(e.FirstOutRelationId), 0, buffer, 5, 4);
-            Array.Copy(BitConverter.GetBytes(e.NextPropertyId), 0, buffer, 9, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstPropertyId), 0, buffer, 9, 4);
             Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 13, 4);
             WriteBlock(DbControl.NodePath, e.NodeId, buffer);
         }
 
-        public static void WriteEdgeBlock(GraphyDb.IO.EdgeBlock e)
+        public static void WriteRelationBlock(RelationBlock e)
         {
-            var buffer = new byte[DbControl.BlockByteSize[DbControl.EdgePath]];
+            var buffer = new byte[DbControl.BlockByteSize[DbControl.RelationPath]];
             Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
             Array.Copy(BitConverter.GetBytes(e.FirstNode), 0, buffer, 1, 4);
             Array.Copy(BitConverter.GetBytes(e.SecondNode), 0, buffer, 5, 4);
@@ -50,14 +51,31 @@ namespace GraphyDb.IO
             Array.Copy(BitConverter.GetBytes(e.FirstNodeNextRelation), 0, buffer, 13, 4);
             Array.Copy(BitConverter.GetBytes(e.SecondNodePreviousRelation), 0, buffer, 17, 4);
             Array.Copy(BitConverter.GetBytes(e.SecondNodeNextRelation), 0, buffer, 21, 4);
-            Array.Copy(BitConverter.GetBytes(e.NextProperty), 0, buffer, 25, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstPropertyId), 0, buffer, 25, 4);
             Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 29, 4);
-            WriteBlock(DbControl.EdgePath, e.EdgeId, buffer);
+            WriteBlock(DbControl.RelationPath, e.RelationId, buffer);
         }
 
-        public static void WriteGenericStringBlock(GraphyDb.IO.GenericStringBlock s)
+
+        public static void WriteStringBlock(GenericStringBlock s)
         {
-            var buffer = new byte[DbControl.BlockByteSize[s.StoragePath]];
+            string storagePath;
+            switch (s)
+            {
+                case LabelBlock _:
+                    storagePath = DbControl.LabelPath;
+                    break;
+                case StringBlock _:
+                    storagePath = DbControl.StringPath;
+                    break;
+                case PropertyNameBlock _:
+                    storagePath = DbControl.PropertyNamePath;
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported string-like block type.");
+            }
+
+            var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             Array.Copy(BitConverter.GetBytes(s.Used), buffer, 1);
             var strBytes = Encoding.UTF8.GetBytes(s.Data);
             var truncStrArray = new byte[32];
@@ -65,18 +83,31 @@ namespace GraphyDb.IO
             Array.Copy(strBytes, truncStrArray, truncationIndex);
             buffer[1] = (byte) strBytes.Length;
             Array.Copy(truncStrArray, 0, buffer, 2, truncationIndex);
-            WriteBlock(s.StoragePath, s.Id, buffer);
+            WriteBlock(storagePath, s.Id, buffer);
         }
 
-        public static void WritePropertyBlock(GraphyDb.IO.PropertyBlock p)
+        public static void WritePropertyBlock(PropertyBlock p)
         {
-            var buffer = new byte[DbControl.BlockByteSize[p.StoragePath]];
-            buffer[0] = (byte) ((p.Used ? 1 : 0) + ((byte) p.PtType << 1));
-            Array.Copy(BitConverter.GetBytes(p.PropertyName), 0, buffer, 1, 4);
+            string storagePath;
+            switch (p)
+            {
+                case NodePropertyBlock _:
+                    storagePath = DbControl.NodePropertyPath;
+                    break;
+                case RelationPropertyBlock _:
+                    storagePath = DbControl.RelationPropertyPath;
+                    break;
+                default:
+                    throw new NotImplementedException("Unsupported property-like block type.");
+            }
+
+            var buffer = new byte[DbControl.BlockByteSize[storagePath]];
+            buffer[0] = (byte) ((p.Used ? 1 : 0) + ((byte) p.PropertyType << 1));
+            Array.Copy(BitConverter.GetBytes(p.PropertyNameId), 0, buffer, 1, 4);
             Array.Copy(p.Value, 0, buffer, 5, 4);
             Array.Copy(BitConverter.GetBytes(p.NextProperty), 0, buffer, 9, 4);
             Array.Copy(BitConverter.GetBytes(p.NodeId), 0, buffer, 13, 4);
-            WriteBlock(p.StoragePath, p.Id, buffer);
+            WriteBlock(storagePath, p.PropertyId, buffer);
         }
 
         /// <summary>

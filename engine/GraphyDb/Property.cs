@@ -16,12 +16,13 @@ namespace GraphyDb
 
     public abstract class Property : Entity
     {
-        static readonly List<Type> SupportedTypes = new List<Type> {typeof(int), typeof(string), typeof(bool), typeof(float)};
+        static readonly List<Type> SupportedTypes =
+            new List<Type> {typeof(int), typeof(string), typeof(bool), typeof(float)};
 
 
         public int PropertyId;
 
-        protected Entity Parent;
+        internal Entity Parent;
 
         public string Key;
 
@@ -40,6 +41,7 @@ namespace GraphyDb
             {
                 throw new ArgumentException(nameof(key) + " cannot be null or empty string");
             }
+
             Key = key;
 
             Value = value;
@@ -52,19 +54,20 @@ namespace GraphyDb
 
         protected Property(Entity parent, PropertyBlock propertyBlock)
         {
-            PropertyId = propertyBlock.Id;
+            PropertyId = propertyBlock.PropertyId;
             Parent = parent;
             Db = parent.Db;
 
-            Key = DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, propertyBlock.PropertyName).Data;
+            Key = DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, propertyBlock.PropertyNameId).Data;
 
-            switch (propertyBlock.PtType)
+            switch (propertyBlock.PropertyType)
             {
                 case PropertyType.Int:
                     value = BitConverter.ToInt32(propertyBlock.Value, 0);
                     break;
                 case PropertyType.String:
-                    value = DbReader.ReadGenericStringBlock(DbControl.StringPath, BitConverter.ToInt32(propertyBlock.Value, 0));
+                    value = DbReader.ReadGenericStringBlock(DbControl.StringPath,
+                        BitConverter.ToInt32(propertyBlock.Value, 0));
                     break;
                 case PropertyType.Bool:
                     value = BitConverter.ToBoolean(propertyBlock.Value, 3);
@@ -75,13 +78,27 @@ namespace GraphyDb
                 default:
                     throw new NotSupportedException("Unrecognized Property Type");
             }
-
         }
 
+        public PropertyType PropertyType
+        {
+            get
+            {
+                switch (value)
+                {
+                    case int _:
+                        return PropertyType.Int;
+                    case bool _:
+                        return PropertyType.Bool;
+                    case float _:
+                        return PropertyType.Float;
+                    case string _:
+                        return PropertyType.String;
+                }
 
-
-
-
+                throw new NotSupportedException();
+            }
+        }
 
         public object Value
         {
@@ -102,6 +119,4 @@ namespace GraphyDb
 
         private object value;
     }
-
-
 }

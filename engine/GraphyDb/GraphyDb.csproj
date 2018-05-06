@@ -47,9 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntityState.cs" />
-    <Compile Include="IO\DbWriter.cs" />
+    <Compile Include="IO\DbReader.cs" />
+    <Compile Include="IO\DbControl.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="IO\Blocks.cs" />
+    <Compile Include="IO\DbWriter.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NodeProperty.cs" />
     <Compile Include="Program.cs" />

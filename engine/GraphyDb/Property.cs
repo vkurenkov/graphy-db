@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using GraphyDb.IO;
 
 namespace GraphyDb
 {
@@ -47,6 +49,39 @@ namespace GraphyDb
             State |= EntityState.Added;
             Db.ChangedEntities.Add(this);
         }
+
+        protected Property(Entity parent, PropertyBlock propertyBlock)
+        {
+            PropertyId = propertyBlock.Id;
+            Parent = parent;
+            Db = parent.Db;
+
+            Key = DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, propertyBlock.PropertyName).Data;
+
+            switch (propertyBlock.PtType)
+            {
+                case PropertyType.Int:
+                    value = BitConverter.ToInt32(propertyBlock.Value, 0);
+                    break;
+                case PropertyType.String:
+                    value = DbReader.ReadGenericStringBlock(DbControl.StringPath, BitConverter.ToInt32(propertyBlock.Value, 0));
+                    break;
+                case PropertyType.Bool:
+                    value = BitConverter.ToBoolean(propertyBlock.Value, 3);
+                    break;
+                case PropertyType.Float:
+                    value = BitConverter.ToSingle(propertyBlock.Value, 0);
+                    break;
+                default:
+                    throw new NotSupportedException("Unrecognized Property Type");
+            }
+
+        }
+
+
+
+
+
 
         public object Value
         {

@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Linq;
-using System.Net.Mime;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace GraphyDb.IO
 {
@@ -52,9 +46,6 @@ namespace GraphyDb.IO
         };
 
         private static FileStream idFileStream;
-
-
-
         internal static readonly Dictionary<string, int> IdStorageDictionary = new Dictionary<string, int>();
 
         // Paths to storage files
@@ -76,8 +67,10 @@ namespace GraphyDb.IO
         {
             try
             {
+                if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
                 DbWriter.InitializeDbWriter();
                 DbReader.InitializeDbReader();
+                DbFetcher.InitializeDbFetcher();
 
                 // Create new empty IdStorage if not present with next free id.
                 // Else initialize .storage.db -> ID mapping
@@ -96,7 +89,7 @@ namespace GraphyDb.IO
                 }
                 else
                 {
-                   idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
+                    idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
                         FileMode.Open,
                         FileAccess.ReadWrite, FileShare.Read);
 
@@ -104,7 +97,7 @@ namespace GraphyDb.IO
                     {
                         var blockNumber = IdStoreOrderNumber[filePath];
                         var storedIdBytes = new byte[4];
-                        idFileStream.Seek(blockNumber*4, SeekOrigin.Begin);
+                        idFileStream.Seek(blockNumber * 4, SeekOrigin.Begin);
                         idFileStream.Read(storedIdBytes, 0, 4);
                         IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
                         Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
@@ -122,6 +115,7 @@ namespace GraphyDb.IO
         {
             DbReader.CloseIOStreams();
             DbWriter.CloseIOStreams();
+            DbFetcher.CloseIOStreams();
             idFileStream?.Dispose();
             idFileStream = null;
         }
@@ -133,9 +127,23 @@ namespace GraphyDb.IO
             {
                 File.Delete(Path.Combine(DbPath, filePath));
             }
+
             File.Delete(Path.Combine(DbPath, IdStoragePath));
         }
 
+        public static int AllocateId(string filePath)
+        {
+            var lastId = IdStorageDictionary[filePath];
+            IdStorageDictionary[filePath] += 1;
+            idFileStream.Seek(IdStoreOrderNumber[filePath] * 4, SeekOrigin.Begin);
+            idFileStream.Write(BitConverter.GetBytes(IdStorageDictionary[filePath]), 0, 4);
+            return lastId;
+        }
+
+        public static int FetchLastId(string filePath)
+        {
+            return IdStorageDictionary[filePath];
+        }
         public static void ConsisterMonitor()
         {
             var th = Thread.CurrentThread;

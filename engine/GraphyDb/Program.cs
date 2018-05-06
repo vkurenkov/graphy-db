@@ -25,11 +25,12 @@ namespace GraphyDb
 
 
             IO.LabelBlock l = new LabelBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.LabelPath, 1));
-            IO.PropertyNameBlock p = new PropertyNameBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.PropertyNamePath, 1));
+            IO.PropertyNameBlock p =
+                new PropertyNameBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.PropertyNamePath, 1));
             IO.StringBlock s = new StringBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.StringPath, 1));
 
             Console.WriteLine($"Label: \"{l.Data}\", Property: \"{p.Data}\", String: \"{s.Data}\"");
-            
+
             IO.DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, 24, 32, 2));
             var np = new NodePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.NodePropertyPath, 1));
 

@@ -60,6 +60,9 @@ namespace GraphyDb.IO
             StringPath
         };
 
+        internal static Dictionary<string, int> LabelInvertedIndex = new Dictionary<string, int>();
+        internal static Dictionary<string, int> PropertyNameInvertedIndex = new Dictionary<string, int>();
+
         /// <summary>
         /// Create storage files if missing
         /// </summary>
@@ -103,6 +106,19 @@ namespace GraphyDb.IO
                         Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
                     }
                 }
+
+                // Initialize Inverted Indexes
+                for (var i = 1; i < FetchLastId(LabelPath); ++i)
+                {
+                    var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
+                    LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
+                }
+
+                for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
+                {
+                    var propertyNameBlock = new PropertyNameBlock(DbReader.ReadGenericStringBlock(PropertyNamePath, i));
+                    PropertyNameInvertedIndex[propertyNameBlock.Data] = propertyNameBlock.Id;
+                }
             }
             catch (Exception ex)
             {
@@ -143,6 +159,26 @@ namespace GraphyDb.IO
         public static int FetchLastId(string filePath)
         {
             return IdStorageDictionary[filePath];
+        }
+
+        public static int FetchLabelId(string label)
+        {
+            LabelInvertedIndex.TryGetValue(label, out var labelId);
+            if (labelId != 0) return labelId;
+            var newLabelId = AllocateId(LabelPath);
+            DbWriter.WriteGenericStringBlock(new GenericStringBlock(LabelPath, true, label, newLabelId));
+            LabelInvertedIndex[label] = labelId;
+            return labelId;
+        }
+
+        public static int FetchPropertyName(string propertyName)
+        {
+            PropertyNameInvertedIndex.TryGetValue(propertyName, out var propertyId);
+            if (propertyId != 0) return propertyId;
+            var newPropertyNameId = AllocateId(PropertyNamePath);
+            DbWriter.WriteGenericStringBlock(new GenericStringBlock(PropertyNamePath, true, propertyName, newPropertyNameId));
+            PropertyNameInvertedIndex[propertyName] = newPropertyNameId;
+            return newPropertyNameId;
         }
 
         public static void ConsisterMonitor()

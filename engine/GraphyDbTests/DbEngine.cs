@@ -95,7 +95,7 @@ namespace GraphyDbTests
             var nodes = query.Match(new NodeDescription(ToNodeLabel));
             query.Execute();
             var node = nodes.Nodes.First();
-            node.ResolveRelations();
+            node.PullInRelations();
             Assert.AreEqual(node.InRelations.Count, 0);
         }
 
@@ -165,13 +165,13 @@ namespace GraphyDbTests
             var nodes = query.Match(new NodeDescription(NodeFromLabel));
             query.Execute();
             var node = nodes.Nodes.First();
-            node.ResolveRelations();
+            node.PullOutRelations();
 
             var query1 = new Query(engine);
             var nodes1 = query1.Match(new NodeDescription(NodeToLabel));
             query1.Execute();
             var node1 = nodes1.Nodes.First();
-            node1.ResolveRelations();
+            node1.PullInRelations();
 
             Assert.AreEqual(node.OutRelations.Count, 0);
             Assert.AreEqual(node1.InRelations.Count, 1);
@@ -180,7 +180,7 @@ namespace GraphyDbTests
         [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
         public void Add_One_Property_To_One_Node()
         {
-            throw new NotImplementedException();
+            
         }
         
         [TestCategory("Properties"), TestCategory("Relations"), TestMethod]

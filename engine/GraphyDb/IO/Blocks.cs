@@ -140,11 +140,11 @@ namespace GraphyDb.IO
         }
 
         public bool Used;
-        public int FirstNode;
-        public int SecondNode;
-        public int FirstNodePreviousRelation;
+        public int FirstNodeId;
+        public int SecondNodeId;
+        public int FirstNodePreviousRelationId;
         public int FirstNodeNextRelation;
-        public int SecondNodePreviousRelation;
+        public int SecondNodePreviousRelationId;
         public int SecondNodeNextRelation;
         public int FirstPropertyId;
         public int LabelId;
@@ -154,16 +154,16 @@ namespace GraphyDb.IO
         {
         }
 
-        public RelationBlock(bool used, int firstNode, int secondNode, int firstNodePreviousRelation,
-            int firstNodeNextRelation, int secondNodePreviousRelation, int secondNodeNextRelation, int firstPropertyId,
+        public RelationBlock(bool used, int firstNodeId, int secondNodeId, int firstNodePreviousRelationId,
+            int firstNodeNextRelation, int secondNodePreviousRelationId, int secondNodeNextRelation, int firstPropertyId,
             int labelId, int relationId)
         {
             Used = used;
-            FirstNode = firstNode;
-            SecondNode = secondNode;
-            FirstNodePreviousRelation = firstNodePreviousRelation;
+            FirstNodeId = firstNodeId;
+            SecondNodeId = secondNodeId;
+            FirstNodePreviousRelationId = firstNodePreviousRelationId;
             FirstNodeNextRelation = firstNodeNextRelation;
-            SecondNodePreviousRelation = secondNodePreviousRelation;
+            SecondNodePreviousRelationId = secondNodePreviousRelationId;
             SecondNodeNextRelation = secondNodeNextRelation;
             FirstPropertyId = firstPropertyId;
             LabelId = labelId;
@@ -178,25 +178,25 @@ namespace GraphyDb.IO
         public PropertyType PropertyType;
         public int PropertyNameId;
         public byte[] Value;
-        public int NextProperty;
+        public int NextPropertyId;
         public int NodeId;
 
         protected PropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
-            int nextProperty, int nodeId)
+            int nextPropertyId, int nodeId)
         {
             PropertyId = propertyId;
             Used = used;
             PropertyType = propertyType;
             PropertyNameId = propertyNameId;
             Value = value;
-            NextProperty = nextProperty;
+            NextPropertyId = nextPropertyId;
             NodeId = nodeId;
         }
 
         protected PropertyBlock(PropertyBlock other)
         {
             PropertyId = other.PropertyId;
-            NextProperty = other.NextProperty;
+            NextPropertyId = other.NextPropertyId;
             PropertyNameId = other.PropertyNameId;
             NodeId = other.NodeId;
             PropertyType = other.PropertyType;
@@ -213,8 +213,8 @@ namespace GraphyDb.IO
 
 
         public NodePropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
-            int nextProperty,
-            int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextProperty, nodeId)
+            int nextPropertyId,
+            int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextPropertyId, nodeId)
         {
         }
     }
@@ -226,8 +226,8 @@ namespace GraphyDb.IO
         }
 
         public RelationPropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
-            int nextProperty,
-            int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextProperty, nodeId)
+            int nextPropertyId,
+            int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextPropertyId, nodeId)
         {
         }
     }

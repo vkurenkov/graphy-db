@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntityState.cs" />
+    <Compile Include="IO\DbFetcher.cs" />
     <Compile Include="IO\DbReader.cs" />
     <Compile Include="IO\DbControl.cs" />
     <Compile Include="Entity.cs" />
@@ -59,7 +60,7 @@
     <Compile Include="Property.cs" />
     <Compile Include="Relation.cs" />
     <Compile Include="RelationProperty.cs" />
-    <Compile Include="UnitOfWork.cs" />
+    <Compile Include="DbEngine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

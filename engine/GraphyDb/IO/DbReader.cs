@@ -7,24 +7,46 @@ using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
-    class DbReader
+    internal static class DbReader
     {
-        public static IO.NodeBlock ReadNodeBlock(int nodeId)
+        internal static readonly Dictionary<string, FileStream>
+            ReadFileStreamDictionary = new Dictionary<string, FileStream>();
+
+        internal static void InitializeDbReader()
+        {
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                ReadFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath), FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
+            }
+        }
+
+        internal static void CloseIOStreams()
+        {
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                ReadFileStreamDictionary?[filePath].Dispose();
+                ReadFileStreamDictionary[filePath] = null;
+            }
+        }
+
+
+        public static NodeBlock ReadNodeBlock(int nodeId)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
             ReadBlock(DbControl.NodePath, nodeId, buffer);
             var used = BitConverter.ToBoolean(buffer, 0);
-            var nextRelationId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
-            var nextPropertyId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
-            var labelId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
-            return new NodeBlock(used, nodeId, nextRelationId, nextPropertyId, labelId);
+            var firstInRelationId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
+            var firstOutRelationId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
+            var nextPropertyId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
+            var labelId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
+            return new NodeBlock(used, nodeId, firstInRelationId, firstOutRelationId, nextPropertyId, labelId);
         }
 
-        public static IO.EdgeBlock ReadEdgeBlock(int edgeId)
+        public static EdgeBlock ReadEdgeBlock(int edgeId)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.EdgePath]];
             ReadBlock(DbControl.EdgePath, edgeId, buffer);
-            IO.EdgeBlock e = new EdgeBlock
+            EdgeBlock e = new EdgeBlock
             {
                 Used = BitConverter.ToBoolean(buffer, 0),
                 FirstNode = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
@@ -39,24 +61,24 @@ namespace GraphyDb.IO
             return e;
         }
 
-        public static IO.GenericStringBlock ReadGenericStringBlock(string storagePath, int id)
+        public static GenericStringBlock ReadGenericStringBlock(string storagePath, int id)
         {
             var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
             var used = BitConverter.ToBoolean(buffer, 0);
             var bitsUsed = buffer[1];
-            var text = System.Text.Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
+            var text = Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
             return new GenericStringBlock(storagePath, used, text, id);
         }
 
-        public static IO.PropertyBlock ReadPropertyBlock(string storagePath, int id)
+        public static PropertyBlock ReadPropertyBlock(string storagePath, int id)
         {
             var buffer = new byte[DbControl.BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
             var used = buffer[0] % 2 == 1;
             var dtype = (PropertyType) (buffer[0] >> 1);
             var propertyName = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
-            var propertyValue = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
+            var propertyValue =buffer.Skip(5).Take(4).ToArray();
             var nextProperty = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
             var nodeId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
             return new PropertyBlock(storagePath, id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
@@ -70,9 +92,9 @@ namespace GraphyDb.IO
         /// <param name="block"> Buffer to which result is written</param>
         public static void ReadBlock(string filePath, int blockNumber, byte[] block)
         {
-            int offset = blockNumber * DbControl.BlockByteSize[filePath];
-            DbControl.FilePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            DbControl.FilePoolDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
+            var offset = blockNumber * DbControl.BlockByteSize[filePath];
+            ReadFileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            ReadFileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
         }
     }
 }

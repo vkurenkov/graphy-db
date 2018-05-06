@@ -1,19 +1,53 @@
-﻿namespace GraphyDb.IO
+﻿using System;
+
+namespace GraphyDb.IO
 {
-    public class NodeBlock
+    public class NodeBlock : IEquatable<NodeBlock>
     {
+        public bool Equals(NodeBlock other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return NodeId == other.NodeId;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((NodeBlock) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return NodeId;
+        }
+
+        public static bool operator ==(NodeBlock left, NodeBlock right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(NodeBlock left, NodeBlock right)
+        {
+            return !Equals(left, right);
+        }
+
         public bool Used;
         public int NodeId;
-        public int NextRelationId;
+        public int FirstInRelationId;
+        public int FirstOutRelationId;
         public int NextPropertyId;
         public int LabelId;
 
-        public NodeBlock(bool used, int nodeId, int nextRelationId, int nextPropertyId, int labelId)
+        public NodeBlock(bool used, int nodeId, int firstInRelationId, int firstOutRelationId,  int nextPropertyId, int labelId)
         {
             Used = used;
             NodeId = nodeId;
-            NextRelationId = nextRelationId;
+            FirstInRelationId = firstInRelationId;
             NextPropertyId = nextPropertyId;
+            FirstOutRelationId = firstOutRelationId;
             LabelId = labelId;
         }
     }
@@ -78,8 +112,38 @@
         }
     }
 
-    public class EdgeBlock
+    public class EdgeBlock : IEquatable<EdgeBlock>
     {
+        public bool Equals(EdgeBlock other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return EdgeId == other.EdgeId;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((EdgeBlock) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return EdgeId;
+        }
+
+        public static bool operator ==(EdgeBlock left, EdgeBlock right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(EdgeBlock left, EdgeBlock right)
+        {
+            return !Equals(left, right);
+        }
+
         public bool Used;
         public int FirstNode;
         public int SecondNode;
@@ -119,11 +183,11 @@
         public bool Used;
         public PropertyType PtType;
         public int PropertyName;
-        public int Value;
+        public byte[] Value;
         public int NextProperty;
         public int NodeId;
 
-        public PropertyBlock(string storagePath, int id, bool used, PropertyType ptType, int propertyName, int value,
+        public PropertyBlock(string storagePath, int id, bool used, PropertyType ptType, int propertyName, byte[] value,
             int nextProperty, int nodeId)
         {
             StoragePath = storagePath;
@@ -156,7 +220,7 @@
             this.StoragePath = DbControl.NodePropertyPath;
         }
 
-        public NodePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, int value, int nextProperty,
+        public NodePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, byte[] value, int nextProperty,
             int nodeId) : base(DbControl.NodePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
         {
         }
@@ -169,7 +233,7 @@
             this.StoragePath = DbControl.EdgePropertyPath;
         }
 
-        public EdgePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, int value, int nextProperty,
+        public EdgePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, byte[] value, int nextProperty,
             int nodeId) : base(DbControl.EdgePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
         {
         }

@@ -34,7 +34,7 @@ namespace GraphyDb.IO
             {PropertyNamePath, 34},
             {NodePropertyPath, 17},
             {EdgePropertyPath, 17},
-            {NodePath, 13},
+            {NodePath, 17},
             {EdgePath, 33},
             {LabelPath, 34},
             {IdStoragePath, 4}
@@ -51,62 +51,61 @@ namespace GraphyDb.IO
             {LabelPath, 0}
         };
 
-        internal static readonly Dictionary<string, FileStream>
-            FilePoolDictionary = new Dictionary<string, FileStream>();
+        private static FileStream idFileStream;
+
+
 
         internal static readonly Dictionary<string, int> IdStorageDictionary = new Dictionary<string, int>();
+
+        // Paths to storage files
+        internal static List<String> DbFilePaths = new List<string>
+        {
+            NodePath,
+            EdgePath,
+            LabelPath,
+            EdgePropertyPath,
+            NodePropertyPath,
+            PropertyNamePath,
+            StringPath
+        };
 
         /// <summary>
         /// Create storage files if missing
         /// </summary>
-        public static void InitializeDatabase()
+        public static void InitializeIO()
         {
-            // Paths to storage files
-            var dbFilePaths = new List<string>
-            {
-                NodePath,
-                EdgePath,
-                LabelPath,
-                EdgePropertyPath,
-                NodePropertyPath,
-                PropertyNamePath,
-                StringPath
-            };
-
             try
             {
-                // Create FileStream associated with each file
-                foreach (string filePath in dbFilePaths)
-                {
-                    FilePoolDictionary[filePath] = new FileStream(Path.Combine(DbPath, filePath), FileMode.OpenOrCreate,
-                        FileAccess.ReadWrite, FileShare.Read);
-                }
+                DbWriter.InitializeDbWriter();
+                DbReader.InitializeDbReader();
 
                 // Create new empty IdStorage if not present with next free id.
                 // Else initialize .storage.db -> ID mapping
                 if (!File.Exists(Path.Combine(DbPath, IdStoragePath)))
                 {
-                    FilePoolDictionary[IdStoragePath] = new FileStream(Path.Combine(DbPath, IdStoragePath),
+                    idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
                         FileMode.Create,
                         FileAccess.ReadWrite, FileShare.Read);
-                    foreach (var filePath in dbFilePaths)
+                    foreach (var filePath in DbFilePaths)
                     {
-                        FilePoolDictionary[IdStoragePath].Write(BitConverter.GetBytes(1), 0, 4);
+                        idFileStream.Write(BitConverter.GetBytes(1), 0, 4);
                         IdStorageDictionary[filePath] = 1;
                     }
 
-                    FilePoolDictionary[IdStoragePath].Flush();
+                    idFileStream.Flush();
                 }
                 else
                 {
-                    FilePoolDictionary[IdStoragePath] = new FileStream(Path.Combine(DbPath, IdStoragePath),
+                   idFileStream = new FileStream(Path.Combine(DbPath, IdStoragePath),
                         FileMode.Open,
                         FileAccess.ReadWrite, FileShare.Read);
-                    foreach (var filePath in dbFilePaths)
+
+                    foreach (var filePath in DbFilePaths)
                     {
                         var blockNumber = IdStoreOrderNumber[filePath];
                         var storedIdBytes = new byte[4];
-                        DbReader.ReadBlock(IdStoragePath, blockNumber, storedIdBytes);
+                        idFileStream.Seek(blockNumber*4, SeekOrigin.Begin);
+                        idFileStream.Read(storedIdBytes, 0, 4);
                         IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
                         Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
                     }
@@ -119,6 +118,23 @@ namespace GraphyDb.IO
             }
         }
 
+        public static void ShutdownIO()
+        {
+            DbReader.CloseIOStreams();
+            DbWriter.CloseIOStreams();
+            idFileStream?.Dispose();
+            idFileStream = null;
+        }
+
+        public static void DeleteDbFiles()
+        {
+            ShutdownIO();
+            foreach (var filePath in DbFilePaths)
+            {
+                File.Delete(Path.Combine(DbPath, filePath));
+            }
+            File.Delete(Path.Combine(DbPath, IdStoragePath));
+        }
 
         public static void ConsisterMonitor()
         {
@@ -130,6 +146,5 @@ namespace GraphyDb.IO
                 Thread.Sleep(250);
             }
         }
-
     }
 }

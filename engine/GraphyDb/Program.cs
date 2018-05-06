@@ -17,25 +17,25 @@ namespace GraphyDb
         {
             Trace.AutoFlush = true;
 
-            IO.DbWriter.InitializeDatabase();
+            IO.DbControl.InitializeDatabase();
 
-            IO.DbWriter.WriteGenericStringBlock(new LabelBlock(true, "Branda", 1));
-            IO.DbWriter.WriteGenericStringBlock(new PropertyNameBlock(true, "Chandra", 1));
-            IO.DbWriter.WriteGenericStringBlock(new StringBlock(true, "A-ah-aha!", 1));
+            DbWriter.WriteGenericStringBlock(new LabelBlock(true, "Branda", 1));
+            DbWriter.WriteGenericStringBlock(new PropertyNameBlock(true, "Chandra", 1));
+            DbWriter.WriteGenericStringBlock(new StringBlock(true, "A-ah-aha!", 1));
 
 
-            IO.LabelBlock l = new LabelBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.LabelPath, 1));
+            IO.LabelBlock l = new LabelBlock(IO.DbReader.ReadGenericStringBlock(DbControl.LabelPath, 1));
             IO.PropertyNameBlock p =
-                new PropertyNameBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.PropertyNamePath, 1));
-            IO.StringBlock s = new StringBlock(IO.DbWriter.ReadGenericStringBlock(DbWriter.StringPath, 1));
+                new PropertyNameBlock(IO.DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, 1));
+            IO.StringBlock s = new StringBlock(IO.DbReader.ReadGenericStringBlock(DbControl.StringPath, 1));
 
             Console.WriteLine($"Label: \"{l.Data}\", Property: \"{p.Data}\", String: \"{s.Data}\"");
 
-            IO.DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, 24, 32, 2));
-            var np = new NodePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.NodePropertyPath, 1));
+            DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, 24, 32, 2));
+            var np = new NodePropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, 1));
 
-            IO.DbWriter.WritePropertyBlock(new EdgePropertyBlock(1, true, PropertyType.Bool, 12, 24, 32, 2));
-            var ep = new EdgePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.EdgePropertyPath, 1));
+            DbWriter.WritePropertyBlock(new EdgePropertyBlock(1, true, PropertyType.Bool, 12, 24, 32, 2));
+            var ep = new EdgePropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.EdgePropertyPath, 1));
 
             Console.WriteLine($"NodeProperty type {np.PtType}, {np.PropertyName}:{np.Value}");
             Console.WriteLine($"EdgeProperty type {ep.PtType}, {ep.PropertyName}:{ep.Value}");

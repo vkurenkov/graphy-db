@@ -46,10 +46,10 @@
     {
         public LabelBlock(GenericStringBlock genericStringBlock) : base(genericStringBlock)
         {
-            this.StoragePath = DbWriter.LabelPath;
+            this.StoragePath = DbControl.LabelPath;
         }
 
-        public LabelBlock(bool used, string data, int id) : base(DbWriter.LabelPath, used, data, id)
+        public LabelBlock(bool used, string data, int id) : base(DbControl.LabelPath, used, data, id)
         {
         }
     }
@@ -58,10 +58,10 @@
     {
         public PropertyNameBlock(GenericStringBlock genericStringBlock) : base(genericStringBlock)
         {
-            this.StoragePath = DbWriter.PropertyNamePath;
+            this.StoragePath = DbControl.PropertyNamePath;
         }
 
-        public PropertyNameBlock(bool used, string data, int id) : base(DbWriter.PropertyNamePath, used, data, id)
+        public PropertyNameBlock(bool used, string data, int id) : base(DbControl.PropertyNamePath, used, data, id)
         {
         }
     }
@@ -70,10 +70,10 @@
     {
         public StringBlock(GenericStringBlock genericStringBlock) : base(genericStringBlock)
         {
-            this.StoragePath = DbWriter.StringPath;
+            this.StoragePath = DbControl.StringPath;
         }
 
-        public StringBlock(bool used, string data, int id) : base(DbWriter.StringPath, used, data, id)
+        public StringBlock(bool used, string data, int id) : base(DbControl.StringPath, used, data, id)
         {
         }
     }
@@ -153,11 +153,11 @@
     {
         public NodePropertyBlock(PropertyBlock other) : base(other)
         {
-            this.StoragePath = DbWriter.NodePropertyPath;
+            this.StoragePath = DbControl.NodePropertyPath;
         }
 
         public NodePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, int value, int nextProperty,
-            int nodeId) : base(DbWriter.NodePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
+            int nodeId) : base(DbControl.NodePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
         {
         }
     }
@@ -166,11 +166,11 @@
     {
         public EdgePropertyBlock(PropertyBlock other) : base(other)
         {
-            this.StoragePath = DbWriter.EdgePropertyPath;
+            this.StoragePath = DbControl.EdgePropertyPath;
         }
 
         public EdgePropertyBlock(int id, bool used, PropertyType ptType, int propertyName, int value, int nextProperty,
-            int nodeId) : base(DbWriter.EdgePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
+            int nodeId) : base(DbControl.EdgePropertyPath, id, used, ptType, propertyName, value, nextProperty, nodeId)
         {
         }
     }

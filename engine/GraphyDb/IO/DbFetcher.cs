@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
-    //TODO Make it use its own FileStreams
+    //TODO Make it use its own FileStreams?
     internal static class DbFetcher
     {
         internal static readonly Dictionary<string, FileStream>
@@ -64,13 +64,6 @@ namespace GraphyDb.IO
                     return h;
                 }
             );
-
-            return outputNodes;
-        }
-
-        public static HashSet<NodeBlock> SelectNodesByLabel(int labelId)
-        {
-            var outputNodes = new HashSet<NodeBlock>();
 
             return outputNodes;
         }

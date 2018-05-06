@@ -15,8 +15,18 @@ namespace GraphyDb.IO
             foreach (var filePath in DbControl.DbFilePaths)
             {
                 WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-                    FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
+                    FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
             }
+        }
+
+
+        public static void InvalidateBlock(string filePath, int id)
+        {
+            WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin);
+            var changedFirstByte = (byte) (WriteFileStreamDictionary[filePath].ReadByte() & 254);
+            WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
+            WriteFileStreamDictionary[filePath].WriteByte(changedFirstByte);
+            WriteFileStreamDictionary[filePath].Flush();
         }
 
         public static void WriteNodeBlock(GraphyDb.IO.NodeBlock e)

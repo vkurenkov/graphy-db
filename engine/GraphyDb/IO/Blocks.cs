@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GraphyDb;
-using GraphyDb.IO;
-
-namespace GraphyDb.IO
+﻿namespace GraphyDb.IO
 {
     public class NodeBlock
     {
@@ -183,38 +174,4 @@ namespace GraphyDb.IO
         {
         }
     }
-<<<<<<< HEAD
-=======
-
-    public class EdgeBlock
-    {
-        public bool Used;
-        public int FirstNode;
-        public int SecondNode;
-        public int FirstNodePreviousRelation;
-        public int FirstNodeNextRelation;
-        public int SecondNodePreviousRelation;
-        public int SecondNodeNextRelation;
-        public int NextProperty;
-        public int LabelId;
-        public int EdgeId;
-
-        public EdgeBlock() { }
-        public EdgeBlock(bool used, int firstNode, int secondNode, int firstNodePreviousRelation,
-            int firstNodeNextRelation, int secondNodePreviousRelation, int secondNodeNextRelation, int nextProperty,
-            int labelId, int edgeId)
-        {
-            Used = used;
-            FirstNode = firstNode;
-            SecondNode = secondNode;
-            FirstNodePreviousRelation = firstNodePreviousRelation;
-            FirstNodeNextRelation = firstNodeNextRelation;
-            SecondNodePreviousRelation = secondNodePreviousRelation;
-            SecondNodeNextRelation = secondNodeNextRelation;
-            NextProperty = nextProperty;
-            LabelId = labelId;
-            EdgeId = edgeId;
-        }
-    }
->>>>>>> c925cdf674cbe022184ae470286f24dbd9ed6128
 }

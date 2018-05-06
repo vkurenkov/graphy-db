@@ -222,8 +222,7 @@ namespace GraphyDb.IO
         public static void WritePropertyBlock(IO.PropertyBlock p)
         {
             var buffer = new byte[BlockByteSize[p.StoragePath]];
-            buffer[0] = (byte)((p.Used ? 1 : 0) + (int) p.PtType << 1);
-            Console.WriteLine($"{p.PtType} + {p.Used}= {buffer[0]}");
+            buffer[0] = (byte) ((p.Used ? 1 : 0) + ((byte) p.PtType << 1));
             Array.Copy(BitConverter.GetBytes(p.PropertyName), 0, buffer, 1, 4);
             Array.Copy(BitConverter.GetBytes(p.Value), 0, buffer, 5, 4);
             Array.Copy(BitConverter.GetBytes(p.NextProperty), 0, buffer, 9, 4);
@@ -236,7 +235,6 @@ namespace GraphyDb.IO
             var buffer = new byte[BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
             var used = buffer[0] % 2 == 1;
-            Console.WriteLine($"{storagePath}[{id}] = {buffer[0]}");
             var dtype = (PropertyType) (buffer[0] >> 1);
             var propertyName = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
             var propertyValue = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);

@@ -30,11 +30,11 @@ namespace GraphyDb
 
             Console.WriteLine($"Label: \"{l.Data}\", Property: \"{p.Data}\", String: \"{s.Data}\"");
             
-            IO.DbWriter.WritePropertyBlock(new NodePropertyBlock(1, true, PropertyType.String, 12, 24, 32, 2));
+            IO.DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, 24, 32, 2));
             var np = new NodePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.NodePropertyPath, 1));
 
-            IO.DbWriter.WritePropertyBlock(new EdgePropertyBlock(1, true, PropertyType.Int, 12, 24, 32, 2));
-            var ep = new EdgePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.NodePropertyPath, 1));
+            IO.DbWriter.WritePropertyBlock(new EdgePropertyBlock(1, true, PropertyType.Bool, 12, 24, 32, 2));
+            var ep = new EdgePropertyBlock(IO.DbWriter.ReadPropertyBlock(DbWriter.EdgePropertyPath, 1));
 
             Console.WriteLine($"NodeProperty type {np.PtType}, {np.PropertyName}:{np.Value}");
             Console.WriteLine($"EdgeProperty type {ep.PtType}, {ep.PropertyName}:{ep.Value}");

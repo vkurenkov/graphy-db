@@ -53,5 +53,11 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\engine\GraphyDb\GraphyDb.csproj">
+      <Project>{349e741d-a12f-4b03-a3b1-8704f9ffd478}</Project>
+      <Name>GraphyDb</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -9,9 +9,9 @@ namespace GraphyDb
     {
         public List<Entity> ChangedEntities;
 
-        public DbEngine(List<Entity> changedEntities)
+        public DbEngine()
         {
-            ChangedEntities = changedEntities;
+            ChangedEntities = new List<Entity>();
         }
 
         public Node AddNode(string label)

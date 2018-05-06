@@ -70,6 +70,7 @@ namespace GraphyDb.IO
                 if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
                 DbWriter.InitializeDbWriter();
                 DbReader.InitializeDbReader();
+                DbFetcher.InitializeDbFetcher();
 
                 // Create new empty IdStorage if not present with next free id.
                 // Else initialize .storage.db -> ID mapping
@@ -114,6 +115,7 @@ namespace GraphyDb.IO
         {
             DbReader.CloseIOStreams();
             DbWriter.CloseIOStreams();
+            DbFetcher.CloseIOStreams();
             idFileStream?.Dispose();
             idFileStream = null;
         }
@@ -138,6 +140,10 @@ namespace GraphyDb.IO
             return lastId;
         }
 
+        public static int FetchLastId(string filePath)
+        {
+            return IdStorageDictionary[filePath];
+        }
         public static void ConsisterMonitor()
         {
             var th = Thread.CurrentThread;

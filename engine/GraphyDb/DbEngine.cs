@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using GraphyDb.IO;
 
 namespace GraphyDb
 {
@@ -25,7 +26,7 @@ namespace GraphyDb
 
         public void DropDatabase()
         {
-            throw new NotImplementedException();
+            DbControl.DeleteDbFiles();
         }
 
         public void SaveChanges()

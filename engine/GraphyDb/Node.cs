@@ -43,7 +43,7 @@ namespace GraphyDb
         private readonly Dictionary<string, NodeProperty> properties;
 
         public List<Relation> OutRelations { get { throw new NotImplementedException(); } }
-        public List<Relation> InRelations { get { throw new NotImplementedException(); } };
+        public List<Relation> InRelations { get { throw new NotImplementedException(); } }
 
         public void ResolveRelations()
         {

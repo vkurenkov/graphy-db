@@ -42,7 +42,7 @@ namespace GraphyDb
 
 
             Console.ReadLine();
-            DbControl.DeleteDb();
+            DbControl.DeleteDbFiles();
         }
 
         static void TraceExample()

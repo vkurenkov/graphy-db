@@ -21,8 +21,8 @@ namespace GraphyDbTests
             engine.DropDatabase();
         }
 
-        [TestMethod]
-        public void Add_Node_No_Properties()
+        [TestCategory("Nodes"), TestMethod]
+        public void Add_One_Node_No_Properties()
         {
             const string Label = "Primitive";
             var engine = new DbEngine();
@@ -37,8 +37,8 @@ namespace GraphyDbTests
             Assert.AreEqual(foundNodes.Nodes.First().Label, Label);
         }
 
-        [TestMethod]
-        public void Add_Node_With_Property()
+        [TestCategory("Nodes"), TestCategory("Properties"), TestMethod]
+        public void Add_One_Node_With_One_Property()
         {
             const string Label = "Primitive";
             const string Color = "Red";
@@ -55,8 +55,8 @@ namespace GraphyDbTests
             Assert.AreEqual(foundNodes.Nodes.First()["Color"], Color);
         }
 
-        [TestMethod]
-        public void Delete_Node()
+        [TestCategory("Nodes"), TestMethod]
+        public void Delete_One_Node()
         {
             const string Label = "Primitive";
             var engine = new DbEngine();
@@ -74,7 +74,7 @@ namespace GraphyDbTests
             Assert.AreEqual(foundNodes.Nodes.Count, 0);
         }
 
-        [TestMethod]
+        [TestCategory("Nodes"), TestCategory("Relations"), TestMethod]
         public void Delete_Node_Should_Remove_Its_Relations()
         {
             const string RelationLabel = "Left";
@@ -99,8 +99,8 @@ namespace GraphyDbTests
             Assert.AreEqual(node.InRelations.Count, 0);
         }
 
-        [TestMethod]
-        public void Add_Relation_No_Properties()
+        [TestCategory("Relations"), TestMethod]
+        public void Add_One_Relation_No_Properties()
         {
             const string LeftLabel = "Left";
             const string NodeFromLabel = "Primitive";
@@ -121,8 +121,8 @@ namespace GraphyDbTests
             Assert.AreEqual(foundRelations.Relations.First().Label, LeftLabel);
         }
 
-        [TestMethod]
-        public void Add_Relation_With_Property()
+        [TestCategory("Relations"), TestCategory("Properties"), TestMethod]
+        public void Add_One_Relation_With_One_Property()
         {
             const string LeftLabel = "Left";
             const string NodeFromLabel = "Primitive";
@@ -144,8 +144,8 @@ namespace GraphyDbTests
             Assert.AreEqual(foundRelations.Relations.First()["Distance"], 0.5f);
         }
 
-        [TestMethod]
-        public void Delete_Relation()
+        [TestCategory("Relations"), TestMethod]
+        public void Delete_One_Relation()
         {
             const string RelationLabel = "Left";
             const string NodeFromLabel = "Primitive";
@@ -177,16 +177,70 @@ namespace GraphyDbTests
             Assert.AreEqual(node1.InRelations.Count, 1);
         }
 
-        [TestMethod]
-        public void Edit_Node_Property()
+        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
+        public void Add_One_Property_To_One_Node()
         {
-
+            throw new NotImplementedException();
+        }
+        
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Add_One_Property_To_One_Relation()
+        {
+            throw new NotImplementedException();
         }
 
-        [TestMethod]
-        public void Edit_Relation_Property()
+        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
+        public void Delete_One_Property_From_Node()
         {
+            throw new NotImplementedException();
+        }
 
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Delete_One_Property_From_Relation()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Nodes"), TestCategory("Properties"), TestMethod]
+        public void Edit_One_Node_Property()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Edit_One_Relation_Property()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_One_Node_By_Label()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_Two_Nodes_By_Label()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_One_Node_By_Label_And_Property()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_One_Node_By_Label_And_2_Properties()
+        {
+            throw new NotImplementedException();
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_One_Node_By_Label_And_One_Relation()
+        {
+            throw new NotImplementedException();
         }
     }
 }

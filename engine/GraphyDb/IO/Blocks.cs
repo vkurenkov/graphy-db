@@ -225,7 +225,8 @@ namespace GraphyDb.IO
         {
         }
 
-        public RelationPropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId, byte[] value,
+        public RelationPropertyBlock(int propertyId, bool used, PropertyType propertyType, int propertyNameId,
+            byte[] value,
             int nextProperty,
             int nodeId) : base(propertyId, used, propertyType, propertyNameId, value, nextProperty, nodeId)
         {

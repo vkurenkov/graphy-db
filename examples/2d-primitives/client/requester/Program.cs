@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
@@ -21,56 +22,59 @@ class Program
         while(true)
         {
             Console.WriteLine("\n############################# REQUEST #############################");
-            Console.WriteLine("What kind of request do you want to send? (0 - GetNeighbors, 1 - Between)");
+            Console.WriteLine("What kind of request do you want to send? (0 - GetSideObjects, 1 - Between)");
             var line = Console.ReadLine();
-            if (String.IsNullOrEmpty(line))
+            if (String.IsNullOrWhiteSpace(line))
             {
                 Console.WriteLine("Please, specify the request type. Abort.");
                 continue;
             }
 
             var requestType = Convert.ToInt32(line);
-            if (requestType == 0) SendGetNeighbors(client, remote);
+            if (requestType == 0) SendSideObjects(client, remote);
             else if (requestType == 1) SendBetween(client, remote);
             else Console.WriteLine("Unknown request type. Abort.");
         }
     }
 
-    private static void SendGetNeighbors(UdpClient client, IPEndPoint remote)
+    private static void SendSideObjects(UdpClient client, IPEndPoint remote)
     {
         Console.WriteLine("What's the color of your figure? (You can press enter if it is not relevant)");
         var color = Console.ReadLine();
         Console.WriteLine("What's the shape of your figure? (You can press enter if it is not relevant)");
         var shape = Console.ReadLine();
-        if (color == NoValue && shape == NoValue)
+        Console.WriteLine("What's the X position of your figure? (You can press enter if it is not relevant)");
+        var positionX = Console.ReadLine();
+        Console.WriteLine("What's the Y position of your figure? (You can press enter if it is not relevant)");
+        var positionY = Console.ReadLine();
+        if (color == NoValue && shape == NoValue && positionX == NoValue && positionY == NoValue)
         {
             Console.WriteLine("At least one of the parameters must be specified. Abort.");
             return;
         }
 
-        Console.WriteLine("In what range should the neighbors lie?");
-        var rangeLine = Console.ReadLine();
-        if(String.IsNullOrEmpty(rangeLine))
+        Console.WriteLine("At which side we should look for objects? (0 - Left, 1 - Right, 2 - Up, 3 - Down)");
+        var sideLine = Console.ReadLine();
+        if(String.IsNullOrWhiteSpace(sideLine))
         {
-            Console.WriteLine("Range must be specified. Abort.");
+            Console.WriteLine("Side must be specified. Abort.");
             return;
         }
-        var range = Convert.ToInt32(rangeLine);
-        if(range <= 0)
-        {
-            Console.WriteLine("Range must lie in (0; +inf). Abort.");
-            return;
-        }
+        var side = Convert.ToByte(sideLine);
 
+        var message = new GetSideObjects();
+        message.Side = side;
+        if (!String.IsNullOrWhiteSpace(color)) message.Color = color;
+        if (!String.IsNullOrWhiteSpace(shape)) message.Shape = shape;
+        if (!String.IsNullOrWhiteSpace(positionX)) message.PositionX = float.Parse(positionX, CultureInfo.InvariantCulture);
 
-        var message = new GetNeighborsMessage();
-        message.Shape = shape;
-        message.Color = color;
-        message.Range = range;
+        else message.PositionX = float.NaN;
+        if (!String.IsNullOrEmpty(positionY)) message.PositionY = float.Parse(positionY, CultureInfo.InvariantCulture);
+        else message.PositionY = float.NaN;
 
         var jsonMessage = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
         var messageBytes = new byte[jsonMessage.Length + 1];
-        messageBytes[0] = (byte)MessageType.GetNeighbors;
+        messageBytes[0] = (byte)MessageType.GetSideObjects;
         Array.Copy(jsonMessage, 0, messageBytes, 1, jsonMessage.Length);
 
         var stopWatch = new Stopwatch();
@@ -79,11 +83,17 @@ class Program
         Console.WriteLine("Request is sent.");
         Console.WriteLine("Waiting for an answer...");
 
-        stopWatch.Start();
-        var answerBytes = client.Receive(ref remote);
-        stopWatch.Stop();
-
-        Console.WriteLine("Answer is received after " + stopWatch.Elapsed);
+        try
+        {
+            stopWatch.Start();
+            var answerBytes = client.Receive(ref remote);
+            stopWatch.Stop();
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine("Request is not handled");
+            Console.WriteLine(e);
+        }
     }
     private static void SendBetween(UdpClient client, IPEndPoint remote)
     {

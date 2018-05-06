@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using GraphyDb.IO;
 
 namespace GraphyDb
 {
@@ -7,6 +9,11 @@ namespace GraphyDb
 
         public List<Entity> ChangedEntities;
 
+
+        public DbEngine(List<Entity> changedEntities)
+        {
+            ChangedEntities = changedEntities;
+        }
 
         public Node AddNode(string label)
         {
@@ -26,14 +33,38 @@ namespace GraphyDb
         }
 
 
-        
-
-
-
 
         public void SaveChanges()
         {
+            foreach (var entity in ChangedEntities.Distinct())
+            {
+                if ((entity.State & EntityState.Added) == EntityState.Added)
+                {
+                    var entityType = entity.GetType();
 
+                    if (entityType == typeof(Node))
+                    {
+                        ((Node) entity).NodeId = DbControl.AllocateId(DbControl.NodePath);
+                    }
+                    else if (entityType == typeof(Relation))
+                    {
+                        ((Relation)entity).RelationId = DbControl.AllocateId(DbControl.EdgePath);
+                    }
+                    else if (entityType == typeof(NodeProperty))
+                    {
+                        ((NodeProperty)entity).PropertyId = DbControl.AllocateId(DbControl.NodePropertyPath);
+                    }
+                    else if (entityType == typeof(RelationProperty))
+                    {
+                        ((RelationProperty)entity).PropertyId = DbControl.AllocateId(DbControl.EdgePropertyPath);
+                    }
+                }
+
+                EventualConsister.ChangedEntitiesQueue.Add(entity);
+            }
+
+
+            ChangedEntities.Clear();
         }
 
 

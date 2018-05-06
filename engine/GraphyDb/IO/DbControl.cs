@@ -144,6 +144,7 @@ namespace GraphyDb.IO
         {
             return IdStorageDictionary[filePath];
         }
+
         public static void ConsisterMonitor()
         {
             var th = Thread.CurrentThread;

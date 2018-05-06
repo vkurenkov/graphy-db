@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
-    //TODO Make it use its own FileStreams
+    //TODO Make it use its own FileStreams?
     internal static class DbFetcher
     {
         internal static readonly Dictionary<string, FileStream>
@@ -31,30 +31,39 @@ namespace GraphyDb.IO
             }
         }
 
-        public static HashSet<NodeBlock> SelectNodesByLabelAndProperty(int propertyNameId, byte[] propertyValue, int labelId)
+        public static HashSet<NodeBlock> SelectNodesByLabelAndProperty(Dictionary<int, byte[]> propertyKeyValue,
+            int labelId)
         {
-            var outputNodes = new HashSet<NodeBlock>();
+            var interimNodes = new Dictionary<int, HashSet<NodeBlock>>();
+            foreach (var entry in propertyKeyValue)
+                interimNodes[entry.Key] = new HashSet<NodeBlock>();
+            var propertyKeys = new HashSet<int>(interimNodes.Keys);
             var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
-            NodePropertyBlock currentNodePropertyBlock = null;
-            for (int propBlockIndex = 1; propBlockIndex < lastPropertyId; ++propBlockIndex)
+            for (var propBlockIndex = 1; propBlockIndex < lastPropertyId; ++propBlockIndex)
             {
-                currentNodePropertyBlock =
+                var currentNodePropertyBlock =
                     new NodePropertyBlock(DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propBlockIndex));
-                if (currentNodePropertyBlock.PropertyName == propertyNameId)
-                {
-                    if (BitConverter.ToInt32(currentNodePropertyBlock.Value,0) == BitConverter.ToInt32(propertyValue, 0))
-                    {
-                     Console.WriteLine();   
-                    }
-                }
+
+                if (!propertyKeys.Contains(currentNodePropertyBlock.PropertyName)) continue;
+
+                if (BitConverter.ToInt32(currentNodePropertyBlock.Value, 0) !=
+                    BitConverter.ToInt32(propertyKeyValue[currentNodePropertyBlock.Id], 0)) continue;
+
+                var currentNodeBlock = DbReader.ReadNodeBlock(currentNodePropertyBlock.NodeId);
+                if (currentNodeBlock.LabelId != labelId) continue;
+
+                interimNodes[currentNodePropertyBlock.Id].Add(currentNodeBlock);
             }
 
-            return outputNodes;
-        }
+            var listOfSets = new List<HashSet<NodeBlock>>(interimNodes.Values);
 
-        public static HashSet<NodeBlock> SelectNodesByLabel(int labelId)
-        {
-            var outputNodes = new HashSet<NodeBlock>();
+            var outputNodes = listOfSets.Aggregate(
+                (h, e) =>
+                {
+                    h.IntersectWith(e);
+                    return h;
+                }
+            );
 
             return outputNodes;
         }

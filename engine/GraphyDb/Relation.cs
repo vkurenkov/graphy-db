@@ -3,8 +3,38 @@ using System.Collections.Generic;
 
 namespace GraphyDb
 {
-    public class Relation : Entity
+    public class Relation : Entity, IEquatable<Relation>
     {
+        public bool Equals(Relation other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return RelationId == other.RelationId;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Relation) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return RelationId;
+        }
+
+        public static bool operator ==(Relation left, Relation right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Relation left, Relation right)
+        {
+            return !Equals(left, right);
+        }
+
         public int RelationId;
 
         public Node From;

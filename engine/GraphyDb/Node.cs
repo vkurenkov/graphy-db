@@ -1,9 +1,40 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GraphyDb
 {
-    public class Node : Entity
+    public class Node : Entity, IEquatable<Node>
     {
+        public bool Equals(Node other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return NodeId == other.NodeId;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Node) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return NodeId;
+        }
+
+        public static bool operator ==(Node left, Node right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Node left, Node right)
+        {
+            return !Equals(left, right);
+        }
+
         public int NodeId;
 
         public int LabelId;
@@ -11,8 +42,8 @@ namespace GraphyDb
 
         private readonly Dictionary<string, NodeProperty> properties;
 
-        public List<Relation> OutRelations;
-        public List<Relation> InRelations;
+//        public List<Relation> OutRelations;
+//        public List<Relation> InRelations;
 
 
         public Node(string label, UnitOfWork db, EntityState state)
@@ -23,8 +54,8 @@ namespace GraphyDb
             Db = db;
 
             properties = new Dictionary<string, NodeProperty>();
-            OutRelations = new List<Relation>();
-            InRelations = new List<Relation>();
+//            OutRelations = new List<Relation>();
+//            InRelations = new List<Relation>();
 
 
             State = state;

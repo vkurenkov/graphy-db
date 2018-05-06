@@ -49,11 +49,11 @@ namespace GraphyDb.IO
             RelationBlock e = new RelationBlock
             {
                 Used = BitConverter.ToBoolean(buffer, 0),
-                FirstNode = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
-                SecondNode = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0),
-                FirstNodePreviousRelation = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0),
+                FirstNodeId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
+                SecondNodeId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0),
+                FirstNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0),
                 FirstNodeNextRelation = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0),
-                SecondNodePreviousRelation = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0),
+                SecondNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0),
                 SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0),
                 FirstPropertyId = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0),
                 LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0)

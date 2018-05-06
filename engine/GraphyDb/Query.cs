@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using GraphyDb.IO;
 
@@ -37,11 +38,41 @@ namespace GraphyDb
         }
 
 
+
+
         public RelationSet To(RelationDescription relationDescription)
         {
+            if (nodeSets.Count != relationSets.Count + 1)
+            {
+                throw new Exception("To/From must be executed after Match");
+            }
 
-            // todo: do
-            RelationSet result = null;
+            var lastNodeLayer = nodeSets.Last().Nodes;
+
+
+            var relationSet = new RelationSet();
+
+
+            foreach (var node in lastNodeLayer)
+            {
+                node.PullOutRelations();
+
+                foreach (var outRelation in node.OutRelations)
+                {
+                    
+                }
+
+
+            }
+
+            
+
+
+
+
+
+                // todo: do
+                RelationSet result = null;
             relationSets.Add(result);
 
             return result;

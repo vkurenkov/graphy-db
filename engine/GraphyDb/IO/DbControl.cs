@@ -171,7 +171,7 @@ namespace GraphyDb.IO
             return labelId;
         }
 
-        public static int FetchPropertyName(string propertyName)
+        public static int FetchPropertyNameId(string propertyName)
         {
             PropertyNameInvertedIndex.TryGetValue(propertyName, out var propertyId);
             if (propertyId != 0) return propertyId;

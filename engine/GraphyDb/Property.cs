@@ -22,7 +22,7 @@ namespace GraphyDb
 
         public int PropertyId;
 
-        protected Entity Parent;
+        internal Entity Parent;
 
         public string Key;
 
@@ -80,14 +80,25 @@ namespace GraphyDb
             }
         }
 
-        public PropertyType GetPropertyType()
+        public PropertyType PropertyType
         {
-            if (value.GetType() == typeof(int)) return PropertyType.Int;
-            if (value.GetType() == typeof(bool)) return PropertyType.Bool;
-            if (value.GetType() == typeof(float)) return PropertyType.Float;
-            if (value.GetType() == typeof(string)) return PropertyType.String;
-        }
+            get
+            {
+                switch (value)
+                {
+                    case int _:
+                        return PropertyType.Int;
+                    case bool _:
+                        return PropertyType.Bool;
+                    case float _:
+                        return PropertyType.Float;
+                    case string _:
+                        return PropertyType.String;
+                }
 
+                throw new NotSupportedException();
+            }
+        }
 
         public object Value
         {

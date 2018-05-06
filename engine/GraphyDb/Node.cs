@@ -42,11 +42,15 @@ namespace GraphyDb
 
         private readonly Dictionary<string, NodeProperty> properties;
 
-//        public List<Relation> OutRelations;
-//        public List<Relation> InRelations;
+        public List<Relation> OutRelations { get { throw new NotImplementedException(); } }
+        public List<Relation> InRelations { get { throw new NotImplementedException(); } };
 
+        public void ResolveRelations()
+        {
+            throw new NotImplementedException();
+        }
 
-        public Node(string label, UnitOfWork db, EntityState state)
+        public Node(string label, DbEngine db, EntityState state)
         {
             NodeId = 0;
             LabelId = 0;

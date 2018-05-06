@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GraphyDb
 {
     public class Query
     {
-        private UnitOfWork Db;
+        private DbEngine Db;
 
-        public Query(UnitOfWork db)
+        public Query(DbEngine db)
         {
             Db = db;
         }
@@ -44,7 +45,9 @@ namespace GraphyDb
             return result;
         }
 
-
-
+        public void Execute()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

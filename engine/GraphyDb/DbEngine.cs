@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GraphyDb
 {
-    public class UnitOfWork
+    public class DbEngine
     {
-
         public List<Entity> ChangedEntities;
-
 
         public Node AddNode(string label)
         {
@@ -18,24 +17,20 @@ namespace GraphyDb
             return new Relation(from, to, label, EntityState.Added);
         }
 
-
         public void Delete(Entity entity)
         {
             entity.State = EntityState.Deleted;
             entity.Db.ChangedEntities.Add(entity);
         }
 
-
-        
-
-
-
+        public void DropDatabase()
+        {
+            throw new NotImplementedException();
+        }
 
         public void SaveChanges()
         {
-
+            throw new NotImplementedException();
         }
-
-
     }
 }

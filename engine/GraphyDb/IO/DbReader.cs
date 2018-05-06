@@ -14,10 +14,11 @@ namespace GraphyDb.IO
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
             ReadBlock(DbControl.NodePath, nodeId, buffer);
             var used = BitConverter.ToBoolean(buffer, 0);
-            var nextRelationId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
-            var nextPropertyId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
-            var labelId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
-            return new NodeBlock(used, nodeId, nextRelationId, nextPropertyId, labelId);
+            var firstInRelationId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
+            var firstOutRelationId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
+            var nextPropertyId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
+            var labelId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
+            return new NodeBlock(used, nodeId, firstInRelationId, firstOutRelationId, nextPropertyId, labelId);
         }
 
         public static IO.EdgeBlock ReadEdgeBlock(int edgeId)
@@ -71,8 +72,8 @@ namespace GraphyDb.IO
         public static void ReadBlock(string filePath, int blockNumber, byte[] block)
         {
             int offset = blockNumber * DbControl.BlockByteSize[filePath];
-            DbControl.FilePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            DbControl.FilePoolDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
+            DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            DbControl.FileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
         }
     }
 }

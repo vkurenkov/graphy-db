@@ -46,7 +46,7 @@ namespace GraphyDb
 //        public List<Relation> InRelations;
 
 
-        public Node(string label, UnitOfWork db, EntityState state)
+        public Node(string label, DbEngine db, EntityState state)
         {
             NodeId = 0;
             LabelId = 0;

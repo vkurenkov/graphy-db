@@ -10,9 +10,10 @@ namespace GraphyDb.IO
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
             Array.Copy(BitConverter.GetBytes(e.Used), buffer, 1);
-            Array.Copy(BitConverter.GetBytes(e.NextRelationId), 0, buffer, 1, 4);
-            Array.Copy(BitConverter.GetBytes(e.NextPropertyId), 0, buffer, 5, 4);
-            Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 9, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstInRelationId), 0, buffer, 1, 4);
+            Array.Copy(BitConverter.GetBytes(e.FirstOutRelationId), 0, buffer, 5, 4);
+            Array.Copy(BitConverter.GetBytes(e.NextPropertyId), 0, buffer, 9, 4);
+            Array.Copy(BitConverter.GetBytes(e.LabelId), 0, buffer, 13, 4);
             WriteBlock(DbControl.NodePath, e.NodeId, buffer);
         }
 
@@ -64,9 +65,9 @@ namespace GraphyDb.IO
         private static void WriteBlock(string filePath, int blockNumber, byte[] block)
         {
             int offset = blockNumber * DbControl.BlockByteSize[filePath];
-            DbControl.FilePoolDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            DbControl.FilePoolDictionary[filePath].Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
-            DbControl.FilePoolDictionary[filePath].Flush();
+            DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            DbControl.FileStreamDictionary[filePath].Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
+            DbControl.FileStreamDictionary[filePath].Flush();
         }
     }
 }

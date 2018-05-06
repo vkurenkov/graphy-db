@@ -88,6 +88,9 @@ class Program
             stopWatch.Start();
             var answerBytes = client.Receive(ref remote);
             stopWatch.Stop();
+            Console.WriteLine("Answer is received.");
+            Console.WriteLine("Request took " + stopWatch.Elapsed.ToString());
+            Console.WriteLine(Encoding.UTF8.GetString(answerBytes));
         }
         catch(Exception e)
         {

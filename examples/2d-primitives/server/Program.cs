@@ -53,16 +53,17 @@ class Program
         {
             Logger.TraceInformation("Get side objects message is received.");
             var deserializedMessage = JsonConvert.DeserializeObject<GetSideObjects>(decodedMessage);
-            var neighbors = GetNeighbors(deserializedMessage);
+            var sideObjects = GetSideObjects(deserializedMessage);
 
-            if(neighbors == null)
+            if(sideObjects == null)
             {
-                var answer = Encoding.UTF8.GetBytes("Okay, I've received your message but there was an internal error!");
+                var answer = Encoding.UTF8.GetBytes("Internal Server Error");
                 server.Send(answer, answer.Length, client);
             }
             else
             {
-
+                var answer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sideObjects));
+                server.Send(answer, answer.Length, client);
             }
 
             Console.Write(deserializedMessage);
@@ -147,9 +148,46 @@ class Program
         GraphDatabase.SaveChanges();
     }
 
-    private static List<PrimitiveObject> GetNeighbors(GetSideObjects message)
+    private static List<PrimitiveObject> GetSideObjects(GetSideObjects message)
     {
         if (!GraphIsOn) return null;
-        throw new NotImplementedException();
+
+        /* Form properties based on the provided message */
+        var targetNodeProps = new Dictionary<String, object>();
+        if (!String.IsNullOrWhiteSpace(message.Color))
+            targetNodeProps.Add("Color", message.Color);
+        if (!String.IsNullOrWhiteSpace(message.Shape))
+            targetNodeProps.Add("Shape", message.Shape);
+        if (!float.IsNaN(message.PositionX))
+            targetNodeProps.Add("X", message.PositionX);
+        if (!float.IsNaN(message.PositionY))
+            targetNodeProps.Add("Y", message.PositionY);
+
+        string side;
+        if (message.Side == 0) side = "Left";
+        else if (message.Side == 1) side = "Right";
+        else if (message.Side == 2) side = "Up";
+        else side = "Down";
+
+        /* Run a query on the graph database */
+        var query = new Query(GraphDatabase);
+        query.Match(new NodeDescription("Primitive", targetNodeProps));
+        query.To(new RelationDescription(side));
+        var foundNodes = query.Match(new NodeDescription("Primitive"));
+        query.Execute();
+
+        var sideObjects = new List<PrimitiveObject>();
+        foreach(var obj in foundNodes.Nodes)
+        {
+            sideObjects.Add(new PrimitiveObject()
+            {
+                Shape = (string)obj.Properties["Shape"].Value,
+                Color = (string)obj.Properties["Color"].Value,
+                X = (float)obj.Properties["X"].Value,
+                Y = (float)obj.Properties["Y"].Value
+            });
+        }
+
+        return sideObjects;
     }
 }

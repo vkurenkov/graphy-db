@@ -65,7 +65,7 @@ public class GetSideObjects
 
     public override string ToString()
     {
-        return "Get neighbors: " + Shape + "; " + Color + "; " + PositionX + "; " + 
+        return "Get side objects: " + Shape + "; " + Color + "; " + PositionX + "; " + 
             PositionY + "; " + Side + ";";
     }
 }

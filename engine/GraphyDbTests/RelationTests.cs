@@ -75,7 +75,7 @@ namespace GraphyDbTests
             node1.PullInRelations();
 
             Assert.AreEqual(node.OutRelations.Count, 0);
-            Assert.AreEqual(node1.InRelations.Count, 1);
+            Assert.AreEqual(node1.InRelations.Count, 0);
         }
         #endregion
 

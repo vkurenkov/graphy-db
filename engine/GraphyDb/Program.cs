@@ -1,10 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GraphyDb.IO;
 
 namespace GraphyDb
@@ -15,46 +12,90 @@ namespace GraphyDb
 
         private static void Main(string[] args)
         {
-            Repeat();
-            Console.WriteLine();
-            Repeat();
-        }
-        private static void Repeat()
-        {
-            IO.DbControl.InitializeIO();
-
-            DbWriter.WriteStringBlock(new LabelBlock(true, "Branda", 1));
-            DbWriter.WriteStringBlock(new PropertyNameBlock(true, "Chandra", 1));
-            DbWriter.WriteStringBlock(new StringBlock(true, "A-ah-aha!", 1));
+//            var nodesList = new List<Node>();
+//            for (var i = 0; i < 100; ++i) nodesList.Add(engine.AddNode("type1"));
+//            for (var i = 0; i < 100; ++i) nodesList.Add(engine.AddNode("type2"));
+//            for (var i = 0; i < 100; ++i) nodesList.Add(engine.AddNode("type3"));
+//            for (var i = 0; i < 300; ++i) nodesList[i]["prop1"] = 10;
+//            for (var i = 0; i < 300; ++i) nodesList[i]["prop2"] = true;
+//            for (var i = 0; i < 300; ++i) nodesList[i]["prop3"] = 11.2;
+//            for (var i = 0; i < 300; ++i) nodesList[i]["prop4"] = $"Alakazam{i}";
 
 
-            IO.LabelBlock l = new LabelBlock(IO.DbReader.ReadGenericStringBlock(DbControl.LabelPath, 1));
-            IO.PropertyNameBlock p =
-                new PropertyNameBlock(IO.DbReader.ReadGenericStringBlock(DbControl.PropertyNamePath, 1));
-            IO.StringBlock s = new StringBlock(IO.DbReader.ReadGenericStringBlock(DbControl.StringPath, 1));
+            var sw = new Stopwatch();
+            var timesToRun = 5.0;
+            for (var i = 0; i < timesToRun; ++i)
+            {
+                var engine = new DbEngine();
+                sw.Start();
+                TestFullyConnectedGraphWithUniqueLabels(engine, 50);
+                sw.Stop();
+                Thread.Sleep(10);
+                engine.DropDatabase();
+            }
 
-            Console.WriteLine($"Label: \"{l.Data}\", Property: \"{p.Data}\", String: \"{s.Data}\"");
-
-            DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, new byte[4] { 5, 6, 12, 1 }, 32, 2));
-            var np = new NodePropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, 1));
-
-            DbWriter.WritePropertyBlock(new RelationPropertyBlock(1, true, PropertyType.Bool, 12, new byte[4] { 0, 0, 0, 1 }, 32, 2));
-            var ep = new RelationPropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, 1));
-
-            Console.WriteLine($"NodeProperty type {np.PropertyType}, {np.PropertyNameId}:{BitConverter.ToSingle(np.Value, 0)}");
-            Console.WriteLine($"RelationProperty type {ep.PropertyType}, {ep.PropertyNameId}:{BitConverter.ToBoolean(ep.Value, 3)}");
-
-
+            Console.WriteLine($"{sw.Elapsed.TotalMilliseconds / timesToRun} ms per iteration");
             Console.ReadLine();
-            DbControl.DeleteDbFiles();
         }
 
-        static void TraceExample()
+        private static void Add100Nodes(DbEngine dbEngine, int run)
         {
-            MySource.TraceEvent(TraceEventType.Error, 1,
-                "Error message.");
-            MySource.TraceEvent(TraceEventType.Warning, 2,
-                "Warning message.");
+            var nodesList = new List<Node>();
+            for (var i = 0; i < 100; i++)
+            {
+                nodesList.Add(dbEngine.AddNode("node"));
+            }
+
+            dbEngine.SaveChanges();
+        }
+
+        private static void Add100Relations(DbEngine dbEngine, int run)
+        {
+            var node = dbEngine.AddNode("first");
+            for (var i = 0; i < 100; i++)
+            {
+                dbEngine.AddRelation(node, node, "edge");
+            }
+
+            dbEngine.SaveChanges();
+        }
+
+        private static void TestFullyConnectedGraph(DbEngine dbEngine, int nodesNum)
+        {
+            var nodesList = new List<Node>();
+            for (var i = 0; i < nodesNum; i++)
+            {
+                nodesList.Add(dbEngine.AddNode("node"));
+            }
+
+            for (var i = 0; i < nodesNum; i++)
+            {
+                for (var j = 0; i < nodesNum; i++)
+                {
+                    var relation = dbEngine.AddRelation(nodesList[i], nodesList[j], "edge");
+                }
+            }
+
+            dbEngine.SaveChanges();
+        }
+
+        private static void TestFullyConnectedGraphWithUniqueLabels(DbEngine dbEngine, int nodesNum)
+        {
+            var nodesList = new List<Node>();
+            for (var i = 0; i < nodesNum; i++)
+            {
+                nodesList.Add(dbEngine.AddNode($"node{i}"));
+            }
+
+            for (var i = 0; i < nodesNum; i++)
+            {
+                for (var j = 0; i < nodesNum; i++)
+                {
+                    var relation = dbEngine.AddRelation(nodesList[i], nodesList[j], $"edge{i}{j}");
+                }
+            }
+
+            dbEngine.SaveChanges();
         }
     }
 }

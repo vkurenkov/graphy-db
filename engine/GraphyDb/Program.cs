@@ -23,13 +23,24 @@ namespace GraphyDb
 
 
             var sw = new Stopwatch();
-            var timesToRun = 5.0;
+            var timesToRun = 20.0;
             for (var i = 0; i < timesToRun; ++i)
             {
                 var engine = new DbEngine();
+                engine.DropDatabase();
+                Thread.Sleep(10);
+                engine = new DbEngine();
+                TestFullyConnectedHalfGraph(engine, 15);
                 sw.Start();
-                TestFullyConnectedGraphWithUniqueLabels(engine, 50);
+                var query = new Query(engine);
+                var nodeMatch1 = query.Match(NodeDescription.Any());
+                var relationMatch = query.From(RelationDescription.Any());
+                var node2Match = query.Match(NodeDescription.Any());
+                query.Execute();
                 sw.Stop();
+                Console.WriteLine(
+                    $"Iteration {i}: {sw.Elapsed.Milliseconds}ms, {nodeMatch1.Nodes.Count}:" +
+                    $"{relationMatch.Relations.Count}:{node2Match.Nodes.Count}");
                 Thread.Sleep(10);
                 engine.DropDatabase();
             }
@@ -79,19 +90,19 @@ namespace GraphyDb
             dbEngine.SaveChanges();
         }
 
-        private static void TestFullyConnectedGraphWithUniqueLabels(DbEngine dbEngine, int nodesNum)
+        private static void TestFullyConnectedHalfGraph(DbEngine dbEngine, int nodesNum)
         {
             var nodesList = new List<Node>();
             for (var i = 0; i < nodesNum; i++)
             {
-                nodesList.Add(dbEngine.AddNode($"node{i}"));
+                nodesList.Add(dbEngine.AddNode($"node{i % 2}"));
             }
 
             for (var i = 0; i < nodesNum; i++)
             {
-                for (var j = 0; i < nodesNum; i++)
+                for (var j = 0; j < nodesNum; j++)
                 {
-                    var relation = dbEngine.AddRelation(nodesList[i], nodesList[j], $"edge{i}{j}");
+                    var relation = dbEngine.AddRelation(nodesList[i], nodesList[j], $"edge{i % 2}{j % 2}");
                 }
             }
 

@@ -19,7 +19,7 @@ namespace GraphyDb
 
         public static void ConsisterMonitor()
         {
-            var th = Thread.CurrentThread;
+            /*var th = Thread.CurrentThread;
             th.Name = "ConsisterMonitor";
 
             while (true)
@@ -318,7 +318,7 @@ namespace GraphyDb
                             break;
                     }
                 }
-            }
+            }*/
         }
     }
 }

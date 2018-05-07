@@ -82,7 +82,7 @@ namespace GraphyDbTests
             const string Label = "Primitive";
             const string Property1Name = "PropertyName";
             const string Property1Value = "value";
-            const string Property2Name = "PropertyName";
+            const string Property2Name = "PropertyName1";
             const string Property2Value = "value";
             var engine = new DbEngine();
 

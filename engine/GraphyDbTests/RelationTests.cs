@@ -185,33 +185,6 @@ namespace GraphyDbTests
         }
 
         [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
-        public void Delete_Property_From_Relation()
-        {
-            const string LeftLabel = "Left";
-            const string NodeFromLabel = "Primitive";
-            const string NodeToLabel = "Primitive1";
-            const string PropertyName = "IntProperty";
-            const int PropertyValue = 2;
-
-            var engine = new DbEngine();
-
-            var nodeFrom = engine.AddNode(NodeFromLabel);
-            var nodeTo = engine.AddNode(NodeToLabel);
-            var relation = engine.AddRelation(nodeFrom, nodeTo, LeftLabel);
-            relation[PropertyName] = PropertyValue;
-            relation.DeleteProperty(PropertyName);
-            engine.SaveChanges();
-            Thread.Sleep(ConsistencyDelayMs);
-
-            var query = new Query(engine);
-            var foundNodes1 = query.Match(new NodeDescription(NodeFromLabel));
-            var foundRelations = query.To(new RelationDescription(LeftLabel));
-            var foundNodes2 = query.Match(new NodeDescription(NodeToLabel));
-            query.Execute();
-            Assert.IsTrue(!foundRelations.Relations.First().Properties.Keys.Contains(PropertyName));
-        }
-
-        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
         public void Edit_Int_Property_Relation()
         {
             const string LeftLabel = "Left";
@@ -321,6 +294,114 @@ namespace GraphyDbTests
             var foundNodes2 = query.Match(new NodeDescription(NodeToLabel));
             query.Execute();
             Assert.AreEqual(foundRelations.Relations.First()[PropertyName], PropertyValueAfter);
+        }
+
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Delete_Int_Property_From_Relation()
+        {
+            const string LeftLabel = "Left";
+            const string NodeFromLabel = "Primitive";
+            const string NodeToLabel = "Primitive1";
+            const string PropertyName = "IntProperty";
+            const int PropertyValue = 2;
+
+            var engine = new DbEngine();
+
+            var nodeFrom = engine.AddNode(NodeFromLabel);
+            var nodeTo = engine.AddNode(NodeToLabel);
+            var relation = engine.AddRelation(nodeFrom, nodeTo, LeftLabel);
+            relation[PropertyName] = PropertyValue;
+            relation.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes1 = query.Match(new NodeDescription(NodeFromLabel));
+            var foundRelations = query.To(new RelationDescription(LeftLabel));
+            var foundNodes2 = query.Match(new NodeDescription(NodeToLabel));
+            query.Execute();
+            Assert.IsTrue(!foundRelations.Relations.First().Properties.Keys.Contains(PropertyName));
+        }
+
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Delete_String_Property_From_Relation()
+        {
+            const string LeftLabel = "Left";
+            const string NodeFromLabel = "Primitive";
+            const string NodeToLabel = "Primitive1";
+            const string PropertyName = "StrProperty";
+            const string PropertyValue = "value";
+
+            var engine = new DbEngine();
+
+            var nodeFrom = engine.AddNode(NodeFromLabel);
+            var nodeTo = engine.AddNode(NodeToLabel);
+            var relation = engine.AddRelation(nodeFrom, nodeTo, LeftLabel);
+            relation[PropertyName] = PropertyValue;
+            relation.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes1 = query.Match(new NodeDescription(NodeFromLabel));
+            var foundRelations = query.To(new RelationDescription(LeftLabel));
+            var foundNodes2 = query.Match(new NodeDescription(NodeToLabel));
+            query.Execute();
+            Assert.IsTrue(!foundRelations.Relations.First().Properties.Keys.Contains(PropertyName));
+        }
+
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Delete_Float_Property_From_Relation()
+        {
+            const string LeftLabel = "Left";
+            const string NodeFromLabel = "Primitive";
+            const string NodeToLabel = "Primitive1";
+            const string PropertyName = "FloatProperty";
+            const float PropertyValue = 1.21f;
+
+            var engine = new DbEngine();
+
+            var nodeFrom = engine.AddNode(NodeFromLabel);
+            var nodeTo = engine.AddNode(NodeToLabel);
+            var relation = engine.AddRelation(nodeFrom, nodeTo, LeftLabel);
+            relation[PropertyName] = PropertyValue;
+            relation.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes1 = query.Match(new NodeDescription(NodeFromLabel));
+            var foundRelations = query.To(new RelationDescription(LeftLabel));
+            var foundNodes2 = query.Match(new NodeDescription(NodeToLabel));
+            query.Execute();
+            Assert.IsTrue(!foundRelations.Relations.First().Properties.Keys.Contains(PropertyName));
+        }
+
+        [TestCategory("Properties"), TestCategory("Relations"), TestMethod]
+        public void Delete_Boolean_Property_From_Relation()
+        {
+            const string LeftLabel = "Left";
+            const string NodeFromLabel = "Primitive";
+            const string NodeToLabel = "Primitive1";
+            const string PropertyName = "BoolProperty";
+            const bool PropertyValue = true;
+
+            var engine = new DbEngine();
+
+            var nodeFrom = engine.AddNode(NodeFromLabel);
+            var nodeTo = engine.AddNode(NodeToLabel);
+            var relation = engine.AddRelation(nodeFrom, nodeTo, LeftLabel);
+            relation[PropertyName] = PropertyValue;
+            relation.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes1 = query.Match(new NodeDescription(NodeFromLabel));
+            var foundRelations = query.To(new RelationDescription(LeftLabel));
+            var foundNodes2 = query.Match(new NodeDescription(NodeToLabel));
+            query.Execute();
+            Assert.IsTrue(!foundRelations.Relations.First().Properties.Keys.Contains(PropertyName));
         }
         #endregion
     }

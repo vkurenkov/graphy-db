@@ -8,25 +8,25 @@ using System.Threading;
 
 namespace GraphyDb.IO
 {
-    public static class DbControl
+    public class DbControl
     {
-        internal static readonly TraceSource TraceSource = new TraceSource("TraceGraphyDb");
+        internal readonly TraceSource TraceSource = new TraceSource("TraceGraphyDb");
 
-        internal const string NodePath = "node.storage.db";
-        internal const string RelationPath = "relation.storage.db";
-        internal const string LabelPath = "label.storage.db";
-        internal const string NodePropertyPath = "node_property.storage.db";
-        internal const string RelationPropertyPath = "relation_property.storage.db";
-        internal const string PropertyNamePath = "property_name.storage.db";
 
-        internal const string StringPath = "string.storage.db";
+        internal static readonly string NodePath = "node.storage.db";
+        internal static readonly string RelationPath = "relation.storage.db";
+        internal static readonly string LabelPath = "label.storage.db";
+        internal static readonly string NodePropertyPath = "node_property.storage.db";
+        internal static readonly string RelationPropertyPath = "relation_property.storage.db";
+        internal static readonly string PropertyNamePath = "property_name.storage.db";
 
-//        internal const string ConsisterPath = "consister.log";
-        internal const string IdStoragePath = "id.storage";
-        internal static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
-        private static bool initializedIOFlag = false;
+        internal static readonly string StringPath = "string.storage.db";
 
-        internal static readonly Dictionary<string, int> BlockByteSize = new Dictionary<string, int>()
+        internal static readonly string IdStoragePath = "id.storage";
+        internal readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
+        private bool initializedIOFlag = false;
+
+        internal readonly Dictionary<string, int> BlockByteSize = new Dictionary<string, int>()
         {
             {StringPath, 34},
             {PropertyNamePath, 34},
@@ -38,7 +38,7 @@ namespace GraphyDb.IO
             {IdStoragePath, 4}
         };
 
-        internal static readonly Dictionary<string, int> IdStoreOrderNumber = new Dictionary<string, int>()
+        internal readonly Dictionary<string, int> IdStoreOrderNumber = new Dictionary<string, int>()
         {
             {StringPath, 1},
             {PropertyNamePath, 2},
@@ -49,13 +49,13 @@ namespace GraphyDb.IO
             {LabelPath, 0}
         };
 
-        private static FileStream idFileStream;
+        private FileStream idFileStream;
 
-        internal static readonly ConcurrentDictionary<string, int> IdStorageDictionary =
+        internal readonly ConcurrentDictionary<string, int> IdStorageDictionary =
             new ConcurrentDictionary<string, int>();
 
         // Paths to storage files
-        internal static List<String> DbFilePaths = new List<string>
+        public List<String> DbFilePaths = new List<string>
         {
             NodePath,
             RelationPath,
@@ -66,29 +66,45 @@ namespace GraphyDb.IO
             StringPath
         };
 
-        internal static ConcurrentDictionary<string, int> LabelInvertedIndex = new ConcurrentDictionary<string, int>();
+        internal ConcurrentDictionary<string, int> LabelInvertedIndex = new ConcurrentDictionary<string, int>();
 
-        internal static ConcurrentDictionary<string, int> PropertyNameInvertedIndex =
+        internal ConcurrentDictionary<string, int> PropertyNameInvertedIndex =
             new ConcurrentDictionary<string, int>();
 
-        internal static Thread ConsisterThread;
+        internal Thread ConsisterThread;
 
-        internal static readonly Dictionary<string, FileStream>
+        internal readonly Dictionary<string, FileStream>
             FileStreamDictionary = new Dictionary<string, FileStream>();
+
+        private static DbWriter dbWriter;
+        private static DbReader dbReader;
+
+        public DbControl()
+        {
+            InitializeIO();
+        }
+
+        public DbWriter GetDbWriter()
+        {
+            return dbWriter ?? (dbWriter = new DbWriter(this));
+        }
+
+        public DbReader DbReader => dbReader() ?? (dbReader = new DbReader(this));
+
 
         /// <summary>
         /// Create storage files if missing
         /// </summary>
-        public static void InitializeIO()
+        public void InitializeIO()
         {
             if (initializedIOFlag) return;
             try
             {
                 if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
 
-                foreach (var filePath in DbControl.DbFilePaths)
+                foreach (var filePath in DbFilePaths)
                 {
-                    FileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
+                    FileStreamDictionary[filePath] = new FileStream(Path.Combine(DbPath, filePath),
                         FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                 }
 
@@ -127,14 +143,14 @@ namespace GraphyDb.IO
                 // Initialize Inverted Indexes
                 for (var i = 1; i < FetchLastId(LabelPath); ++i)
                 {
-                    var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
+                    var labelBlock = new LabelBlock(GetdbControl.GetDbReader()().ReadGenericStringBlock(LabelPath, i));
                     LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
                 }
 
                 for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
                 {
                     var propertyNameBlock =
-                        new PropertyNameBlock(DbReader.ReadGenericStringBlock(PropertyNamePath, i));
+                        new PropertyNameBlock(GetdbControl.GetDbReader()().ReadGenericStringBlock(PropertyNamePath, i));
                     PropertyNameInvertedIndex[propertyNameBlock.Data] = propertyNameBlock.Id;
                 }
             }
@@ -151,12 +167,12 @@ namespace GraphyDb.IO
             }
         }
 
-        public static void ShutdownIO()
+        public void ShutdownIO()
         {
             EventualConsister.ChangedEntitiesQueue.Add(new KillConsisterEntity());
             ConsisterThread.Join();
 
-            foreach (var filePath in DbControl.DbFilePaths)
+            foreach (var filePath in DbFilePaths)
             {
                 FileStreamDictionary?[filePath].Dispose();
                 FileStreamDictionary[filePath] = null;
@@ -167,13 +183,12 @@ namespace GraphyDb.IO
             initializedIOFlag = false;
         }
 
-        public static void DeleteDbFiles()
+        public void DeleteDbFiles()
         {
             ShutdownIO();
             IdStorageDictionary.Clear();
             PropertyNameInvertedIndex.Clear();
             LabelInvertedIndex.Clear();
-
 
 
             foreach (var filePath in DbFilePaths)
@@ -184,7 +199,7 @@ namespace GraphyDb.IO
             File.Delete(Path.Combine(DbPath, IdStoragePath));
         }
 
-        public static int AllocateId(string filePath)
+        public int AllocateId(string filePath)
         {
             var lastId = IdStorageDictionary[filePath];
             IdStorageDictionary[filePath] += 1;
@@ -193,27 +208,27 @@ namespace GraphyDb.IO
             return lastId;
         }
 
-        public static int FetchLastId(string filePath)
+        public int FetchLastId(string filePath)
         {
             return IdStorageDictionary[filePath];
         }
 
-        public static int FetchLabelId(string label)
+        public int FetchLabelId(string label)
         {
             LabelInvertedIndex.TryGetValue(label, out var labelId);
             if (labelId != 0) return labelId;
             var newLabelId = AllocateId(LabelPath);
             LabelInvertedIndex[label] = newLabelId;
-            DbWriter.WriteStringBlock(new LabelBlock(true, label, newLabelId));
+            GetDbWriter().WriteStringBlock(new LabelBlock(true, label, newLabelId));
             return newLabelId;
         }
 
-        public static int FetchPropertyNameId(string propertyName)
+        public int FetchPropertyNameId(string propertyName)
         {
             PropertyNameInvertedIndex.TryGetValue(propertyName, out var propertyId);
             if (propertyId != 0) return propertyId;
             var newPropertyNameId = AllocateId(PropertyNamePath);
-            DbWriter.WriteStringBlock(new PropertyNameBlock(true, propertyName, newPropertyNameId));
+            GetDbWriter().WriteStringBlock(new PropertyNameBlock(true, propertyName, newPropertyNameId));
             PropertyNameInvertedIndex[propertyName] = newPropertyNameId;
             return newPropertyNameId;
         }

@@ -56,7 +56,7 @@
     <Compile Include="EventualConsister.cs" />
     <Compile Include="IO\DbFetcher.cs" />
     <Compile Include="IO\DbReader.cs" />
-    <Compile Include="IO\DbControl.cs" />
+    <Compile Include="IO\dbControl.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="IO\Blocks.cs" />
     <Compile Include="IO\DbWriter.cs" />

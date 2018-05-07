@@ -40,17 +40,17 @@ namespace GraphyDb
                     if (entityType == typeof(Node))
                     {
                         var node = ((Node) entity);
-                        DbWriter.InvalidateBlock(DbControl.NodePath, node.NodeId);
+                        DbWriter.InvalidateBlock(dbControl.NodePath, node.NodeId);
                         var nodeBlock = DbReader.ReadNodeBlock(node.NodeId);
                         var nextNodePropertyId = nodeBlock.FirstPropertyId;
                         while (nextNodePropertyId != 0)
                         {
                             var nextPropertyBlock =
-                                DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nextNodePropertyId);
-                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextNodePropertyId);
+                                DbReader.ReadPropertyBlock(dbControl.NodePropertyPath, nextNodePropertyId);
+                            DbWriter.InvalidateBlock(dbControl.NodePropertyPath, nextNodePropertyId);
                             if (nextPropertyBlock.PropertyType is PropertyType.String)
                             {
-                                DbWriter.InvalidateBlock(DbControl.StringPath,
+                                DbWriter.InvalidateBlock(dbControl.StringPath,
                                     BitConverter.ToInt32(nextPropertyBlock.Value, 0));
                             }
 
@@ -61,16 +61,16 @@ namespace GraphyDb
                         while (nextOutRelationId != 0)
                         {
                             var nextOutRelationBLock = DbReader.ReadRelationBlock(nextOutRelationId);
-                            DbWriter.InvalidateBlock(DbControl.RelationPath, nextOutRelationId);
+                            DbWriter.InvalidateBlock(dbControl.RelationPath, nextOutRelationId);
                             var nextRelationPropertyId = nextOutRelationBLock.FirstPropertyId;
                             while (nextRelationPropertyId != 0)
                             {
-                                var nextPropertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath,
+                                var nextPropertyBlock = DbReader.ReadPropertyBlock(dbControl.RelationPropertyPath,
                                     nextRelationPropertyId);
-                                DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                DbWriter.InvalidateBlock(dbControl.RelationPropertyPath, nextRelationPropertyId);
                                 if (nextPropertyBlock.PropertyType is PropertyType.String)
                                 {
-                                    DbWriter.InvalidateBlock(DbControl.StringPath,
+                                    DbWriter.InvalidateBlock(dbControl.StringPath,
                                         BitConverter.ToInt32(nextPropertyBlock.Value, 0));
                                 }
 
@@ -84,16 +84,16 @@ namespace GraphyDb
                         while (nextInRelationId != 0)
                         {
                             var nextInRelationBlock = DbReader.ReadRelationBlock(nextInRelationId);
-                            DbWriter.InvalidateBlock(DbControl.RelationPath, nextInRelationId);
+                            DbWriter.InvalidateBlock(dbControl.RelationPath, nextInRelationId);
                             var nextRelationPropertyId = nextInRelationBlock.FirstPropertyId;
                             while (nextRelationPropertyId != 0)
                             {
                                 var nextPropertyBlock =
-                                    DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
-                                DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                    DbReader.ReadPropertyBlock(dbControl.RelationPropertyPath, nextRelationPropertyId);
+                                DbWriter.InvalidateBlock(dbControl.RelationPropertyPath, nextRelationPropertyId);
                                 if (nextPropertyBlock.PropertyType is PropertyType.String)
                                 {
-                                    DbWriter.InvalidateBlock(DbControl.StringPath,
+                                    DbWriter.InvalidateBlock(dbControl.StringPath,
                                         BitConverter.ToInt32(nextPropertyBlock.Value, 0));
                                 }
 
@@ -106,17 +106,17 @@ namespace GraphyDb
                     else if (entityType == typeof(Relation))
                     {
                         var relation = ((Relation) entity);
-                        DbWriter.InvalidateBlock(DbControl.RelationPath, relation.RelationId);
+                        DbWriter.InvalidateBlock(dbControl.RelationPath, relation.RelationId);
                         var relationBlock = DbReader.ReadRelationBlock(relation.RelationId);
                         var nextPropertyId = relationBlock.FirstPropertyId;
                         while (nextPropertyId != 0)
                         {
                             var nextPropertyBlock =
-                                DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, nextPropertyId);
-                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextPropertyId);
+                                DbReader.ReadPropertyBlock(dbControl.RelationPropertyPath, nextPropertyId);
+                            DbWriter.InvalidateBlock(dbControl.NodePropertyPath, nextPropertyId);
                             if (nextPropertyBlock.PropertyType is PropertyType.String)
                             {
-                                DbWriter.InvalidateBlock(DbControl.StringPath,
+                                DbWriter.InvalidateBlock(dbControl.StringPath,
                                     BitConverter.ToInt32(nextPropertyBlock.Value, 0));
                             }
 
@@ -128,20 +128,20 @@ namespace GraphyDb
                         var nodeProperty = ((NodeProperty) entity);
                         if (nodeProperty.PropertyType is PropertyType.String)
                         {
-                            DbWriter.InvalidateBlock(DbControl.StringPath, (int) nodeProperty.Value);
+                            DbWriter.InvalidateBlock(dbControl.StringPath, (int) nodeProperty.Value);
                         }
 
-                        DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nodeProperty.PropertyId);
+                        DbWriter.InvalidateBlock(dbControl.NodePropertyPath, nodeProperty.PropertyId);
                     }
                     else if (entityType == typeof(RelationProperty))
                     {
                         var relationProperty = ((RelationProperty) entity);
                         if (relationProperty.PropertyType is PropertyType.String)
                         {
-                            DbWriter.InvalidateBlock(DbControl.StringPath, (int) relationProperty.Value);
+                            DbWriter.InvalidateBlock(dbControl.StringPath, (int) relationProperty.Value);
                         }
 
-                        DbWriter.InvalidateBlock(DbControl.RelationPropertyPath,
+                        DbWriter.InvalidateBlock(dbControl.RelationPropertyPath,
                             relationProperty.PropertyId);
                     }
                     else
@@ -159,7 +159,7 @@ namespace GraphyDb
                     switch (entity)
                     {
                         case Node node:
-                            nodeBlock = new NodeBlock(true, node.NodeId, 0, 0, 0, DbControl.FetchLabelId(node.Label));
+                            nodeBlock = new NodeBlock(true, node.NodeId, 0, 0, 0, dbControl.FetchLabelId(node.Label));
                             DbWriter.WriteNodeBlock(nodeBlock);
                             break;
                         case Relation relation:
@@ -171,7 +171,7 @@ namespace GraphyDb
                                 SecondNodeId = relation.To.NodeId,
                                 FirstNodePreviousRelationId = 0,
                                 SecondNodePreviousRelationId = 0,
-                                LabelId = DbControl.FetchLabelId(relation.Label),
+                                LabelId = dbControl.FetchLabelId(relation.Label),
                                 FirstPropertyId = 0,
                                 RelationId = relation.RelationId
                             };
@@ -224,7 +224,7 @@ namespace GraphyDb
                                     break;
                                 case PropertyType.String:
                                     // Add to String Storage, get returned pointer to the string storage, write it as the byteValue
-                                    var newStringId = DbControl.AllocateId(DbControl.StringPath);
+                                    var newStringId = dbControl.AllocateId(dbControl.StringPath);
                                     DbWriter.WriteStringBlock(new StringBlock(true, (string) property.Value,
                                         newStringId));
                                     byteValue = BitConverter.GetBytes(newStringId);
@@ -241,7 +241,7 @@ namespace GraphyDb
                                     parentId = ((Node) property.Parent).NodeId;
                                     propertyBlock = new NodePropertyBlock(property.PropertyId, true,
                                         property.PropertyType,
-                                        DbControl.FetchPropertyNameId(property.Key),
+                                        dbControl.FetchPropertyNameId(property.Key),
                                         byteValue, 0, parentId);
                                     nodeBlock = DbReader.ReadNodeBlock(parentId);
                                     propertyBlock.NextPropertyId = nodeBlock.FirstPropertyId;
@@ -253,7 +253,7 @@ namespace GraphyDb
                                     parentId = ((Relation) property.Parent).RelationId;
                                     propertyBlock = new RelationPropertyBlock(property.PropertyId, true,
                                         property.PropertyType,
-                                        DbControl.FetchPropertyNameId(property.Key),
+                                        dbControl.FetchPropertyNameId(property.Key),
                                         byteValue, 0, parentId);
                                     relationBlock = DbReader.ReadRelationBlock(parentId);
                                     propertyBlock.NextPropertyId = relationBlock.FirstPropertyId;
@@ -285,8 +285,8 @@ namespace GraphyDb
                         case RelationProperty _:
                             var property = (Property) entity;
                             var propertyPath = (property is NodeProperty)
-                                ? DbControl.NodePropertyPath
-                                : DbControl.RelationPropertyPath;
+                                ? dbControl.NodePropertyPath
+                                : dbControl.RelationPropertyPath;
                             var oldPropertyBlock = DbReader.ReadPropertyBlock(propertyPath, property.PropertyId);
 
                             byte[] byteValue = new byte[4];
@@ -302,9 +302,9 @@ namespace GraphyDb
                                     byteValue = BitConverter.GetBytes((float) property.Value);
                                     break;
                                 case PropertyType.String:
-                                    DbWriter.InvalidateBlock(DbControl.StringPath,
+                                    DbWriter.InvalidateBlock(dbControl.StringPath,
                                         BitConverter.ToInt32(oldPropertyBlock.Value, 0));
-                                    var newStringId = DbControl.AllocateId(DbControl.StringPath);
+                                    var newStringId = dbControl.AllocateId(dbControl.StringPath);
                                     DbWriter.WriteStringBlock(new StringBlock(true, (string) property.Value,
                                         newStringId));
                                     byteValue = BitConverter.GetBytes(newStringId);

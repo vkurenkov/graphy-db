@@ -9,9 +9,12 @@ namespace GraphyDb
     {
         public List<Entity> ChangedEntities;
 
+        private DbControl dbControl;
+
         public DbEngine()
         {
-            DbControl.InitializeIO();
+            dbControl = new DbControl();
+            dbControl.InitializeIO();
             ChangedEntities = new List<Entity>();
         }
 
@@ -41,19 +44,19 @@ namespace GraphyDb
 
                     if (entityType == typeof(Node))
                     {
-                        ((Node)entity).NodeId = DbControl.AllocateId(DbControl.NodePath);
+                        ((Node) entity).NodeId = dbControl.AllocateId(DbControl.NodePath);
                     }
                     else if (entityType == typeof(Relation))
                     {
-                        ((Relation)entity).RelationId = DbControl.AllocateId(DbControl.RelationPath);
+                        ((Relation) entity).RelationId = dbControl.AllocateId(DbControl.RelationPath);
                     }
                     else if (entityType == typeof(NodeProperty))
                     {
-                        ((NodeProperty)entity).PropertyId = DbControl.AllocateId(DbControl.NodePropertyPath);
+                        ((NodeProperty) entity).PropertyId = dbControl.AllocateId(DbControl.NodePropertyPath);
                     }
                     else if (entityType == typeof(RelationProperty))
                     {
-                        ((RelationProperty)entity).PropertyId = DbControl.AllocateId(DbControl.RelationPropertyPath);
+                        ((RelationProperty) entity).PropertyId = dbControl.AllocateId(DbControl.RelationPropertyPath);
                     }
                 }
 
@@ -66,7 +69,7 @@ namespace GraphyDb
 
         public void DropDatabase()
         {
-            DbControl.DeleteDbFiles();
+            dbControl.DeleteDbFiles();
         }
     }
 }

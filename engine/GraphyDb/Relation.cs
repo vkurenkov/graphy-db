@@ -48,24 +48,24 @@ namespace GraphyDb
             RelationId = relationBlock.RelationId;
 
             LabelId = relationBlock.LabelId;
-            Label = DbReader.ReadGenericStringBlock(DbControl.LabelPath, LabelId).Data;
+            Label = DbReader.ReadGenericStringBlock(dbControl.LabelPath, LabelId).Data;
 
             Properties = new Dictionary<string, RelationProperty>();
 
-            var propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, relationBlock.FirstPropertyId);
+            var propertyBlock = DbReader.ReadPropertyBlock(dbControl.RelationPropertyPath, relationBlock.FirstPropertyId);
 
             while (propertyBlock.PropertyId != 0)
             {
                 if (!propertyBlock.Used)
                 {
-                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextPropertyId);
+                    propertyBlock = DbReader.ReadPropertyBlock(dbControl.RelationPropertyPath, propertyBlock.NextPropertyId);
                     continue;
                 }
 
                 var property = new RelationProperty(this, propertyBlock);
                 Properties.Add(property.Key, property);
 
-                propertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, propertyBlock.NextPropertyId);
+                propertyBlock = DbReader.ReadPropertyBlock(dbControl.RelationPropertyPath, propertyBlock.NextPropertyId);
             }
 
 

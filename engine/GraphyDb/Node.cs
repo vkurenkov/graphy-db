@@ -43,27 +43,27 @@ namespace GraphyDb
             NodeId = nodeBlock.NodeId;
             LabelId = nodeBlock.LabelId;
 
-            Label = IO.DbReader.ReadGenericStringBlock(DbControl.LabelPath, LabelId).Data;
+            Label = IO.dbControl.GetDbReader().ReadGenericStringBlock(DbControl.LabelPath, LabelId).Data;
             Db = db;
 
 
             Properties = new Dictionary<string, NodeProperty>();
 
 
-            var propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nodeBlock.FirstPropertyId);
+            var propertyBlock = dbControl.GetDbReader().ReadPropertyBlock(DbControl.NodePropertyPath, nodeBlock.FirstPropertyId);
 
             while (propertyBlock.PropertyId != 0)
             {
                 if (!propertyBlock.Used)
                 {
-                    propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextPropertyId);
+                    propertyBlock = dbControl.GetDbReader().ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextPropertyId);
                     continue;
                 }
 
                 var property = new NodeProperty(this, propertyBlock);
                 Properties.Add(property.Key, property);
 
-                propertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextPropertyId);
+                propertyBlock = dbControl.GetDbReader().ReadPropertyBlock(DbControl.NodePropertyPath, propertyBlock.NextPropertyId);
             }
 
 
@@ -77,13 +77,13 @@ namespace GraphyDb
         {
             OutRelations = new List<Relation>();
 
-            var outRelationBlock = DbReader.ReadRelationBlock(nodeBlock.FirstOutRelationId);
+            var outRelationBlock = dbControl.GetDbReader().ReadRelationBlock(nodeBlock.FirstOutRelationId);
 
             while (outRelationBlock.RelationId != 0)
             {
                 if (!outRelationBlock.Used)
                 {
-                    outRelationBlock = DbReader.ReadRelationBlock(outRelationBlock.FirstNodeNextRelation);
+                    outRelationBlock = dbControl.GetDbReader().ReadRelationBlock(outRelationBlock.FirstNodeNextRelation);
                     continue;
                 }
 
@@ -91,7 +91,7 @@ namespace GraphyDb
 
                 OutRelations.Add(relation);
 
-                outRelationBlock = DbReader.ReadRelationBlock(outRelationBlock.FirstNodeNextRelation);
+                outRelationBlock = dbControl.GetDbReader().ReadRelationBlock(outRelationBlock.FirstNodeNextRelation);
             }
 
         }
@@ -100,13 +100,13 @@ namespace GraphyDb
         {
             InRelations = new List<Relation>();
 
-            var inRelationBlock = DbReader.ReadRelationBlock(nodeBlock.FirstInRelationId);
+            var inRelationBlock = dbControl.GetDbReader().ReadRelationBlock(nodeBlock.FirstInRelationId);
 
             while (inRelationBlock.RelationId != 0)
             {
                 if (!inRelationBlock.Used)
                 {
-                    inRelationBlock = DbReader.ReadRelationBlock(inRelationBlock.SecondNodeNextRelation);
+                    inRelationBlock = dbControl.GetDbReader().ReadRelationBlock(inRelationBlock.SecondNodeNextRelation);
                     continue;
                 }
 
@@ -114,7 +114,7 @@ namespace GraphyDb
 
                 InRelations.Add(relation);
 
-                inRelationBlock = DbReader.ReadRelationBlock(inRelationBlock.SecondNodeNextRelation);
+                inRelationBlock = dbControl.GetDbReader().ReadRelationBlock(inRelationBlock.SecondNodeNextRelation);
             }
 
         }

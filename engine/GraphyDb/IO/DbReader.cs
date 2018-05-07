@@ -6,33 +6,18 @@ using System.Text;
 
 namespace GraphyDb.IO
 {
-    internal static class DbReader
+    public class DbReader
     {
-//        internal static readonly Dictionary<string, FileStream>
-//            ReadFileStreamDictionary = new Dictionary<string, FileStream>();
-//
-//        internal static void InitializeDbReader()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                ReadFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-//                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-//            }
-//        }
-//
-//        internal static void CloseIOStreams()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                ReadFileStreamDictionary?[filePath].Dispose();
-//                ReadFileStreamDictionary[filePath] = null;
-//            }
-//        }
+        private readonly DbControl dbControl;
 
-
-        public static NodeBlock ReadNodeBlock(int nodeId)
+        public DbReader(DbControl dbControl)
         {
-            var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];
+            this.dbControl = dbControl;
+        }
+
+        public NodeBlock ReadNodeBlock(int nodeId)
+        {
+            var buffer = new byte[dbControl.BlockByteSize[DbControl.NodePath]];
             ReadBlock(DbControl.NodePath, nodeId, buffer);
             var used = BitConverter.ToBoolean(buffer, 0);
             var firstInRelationId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
@@ -42,9 +27,9 @@ namespace GraphyDb.IO
             return new NodeBlock(used, nodeId, firstInRelationId, firstOutRelationId, nextPropertyId, labelId);
         }
 
-        public static RelationBlock ReadRelationBlock(int relationId)
+        public RelationBlock ReadRelationBlock(int relationId)
         {
-            var buffer = new byte[DbControl.BlockByteSize[DbControl.RelationPath]];
+            var buffer = new byte[dbControl.BlockByteSize[DbControl.RelationPath]];
             ReadBlock(DbControl.RelationPath, relationId, buffer);
             RelationBlock e = new RelationBlock
             {
@@ -62,46 +47,35 @@ namespace GraphyDb.IO
             return e;
         }
 
-        public static GenericStringBlock ReadGenericStringBlock(string storagePath, int id)
+        public GenericStringBlock ReadGenericStringBlock(string storagePath, int id)
         {
-            var buffer = new byte[DbControl.BlockByteSize[storagePath]];
+            var buffer = new byte[dbControl.BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
             var used = BitConverter.ToBoolean(buffer, 0);
             var bitsUsed = buffer[1];
             var text = Encoding.UTF8.GetString(buffer.Skip(2).Take(bitsUsed).ToArray());
-            switch (storagePath)
-            {
-                case DbControl.LabelPath:
-                    return new LabelBlock(used, text, id);
-                case DbControl.StringPath:
-                    return new StringBlock(used, text, id);
-                case DbControl.PropertyNamePath:
-                    return new PropertyNameBlock(used, text, id);
-                default:
-                    throw new ArgumentException("Storage path is invalid.");
-            }
+            if (storagePath == DbControl.LabelPath) return new LabelBlock(used, text, id);
+            if (storagePath == DbControl.StringPath) return new StringBlock(used, text, id);
+            if (storagePath == DbControl.PropertyNamePath) return new PropertyNameBlock(used, text, id);
+            throw new ArgumentException("Storage path is invalid.");
         }
 
-        public static PropertyBlock ReadPropertyBlock(string storagePath, int id)
+        public PropertyBlock ReadPropertyBlock(string storagePath, int id)
         {
-            var buffer = new byte[DbControl.BlockByteSize[storagePath]];
+            var buffer = new byte[dbControl.BlockByteSize[storagePath]];
             ReadBlock(storagePath, id, buffer);
             var used = buffer[0] % 2 == 1;
             var dtype = (PropertyType) (buffer[0] >> 1);
             var propertyName = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
             var propertyValue = buffer.Skip(5).Take(4).ToArray();
             var nextProperty = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
-            var nodeId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
-            switch (storagePath)
-            {
-                case DbControl.NodePropertyPath:
-                    return new NodePropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
-                case DbControl.RelationPropertyPath:
-                    return new RelationPropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty,
-                        nodeId);
-                default:
-                    throw new ArgumentException("Storage path is invalid.");
-            }
+            var parentId = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
+            if (storagePath == DbControl.NodePropertyPath)
+                return new NodePropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty, parentId);
+            if (storagePath == DbControl.RelationPropertyPath)
+                return new RelationPropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty,
+                    parentId);
+            throw new ArgumentException("Storage path is invalid.");
         }
 
         /// <summary>
@@ -110,11 +84,11 @@ namespace GraphyDb.IO
         /// <param name="filePath">Path to the file with byte-record structure</param>
         /// <param name="blockNumber">Block position from the beggining of the file</param>
         /// <param name="block"> Buffer to which result is written</param>
-        public static void ReadBlock(string filePath, int blockNumber, byte[] block)
+        public void ReadBlock(string filePath, int blockNumber, byte[] block)
         {
-            var offset = blockNumber * DbControl.BlockByteSize[filePath];
-            DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            DbControl.FileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
+            var offset = blockNumber * dbControl.BlockByteSize[filePath];
+            dbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            dbControl.FileStreamDictionary[filePath].Read(block, 0, dbControl.BlockByteSize[filePath]);
         }
     }
 }

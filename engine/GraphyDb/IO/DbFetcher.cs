@@ -7,38 +7,24 @@ using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
-    internal static class DbFetcher
+    internal class DbFetcher
     {
-//        internal static readonly Dictionary<string, FileStream>
-//            FetcherStreamDictionary = new Dictionary<string, FileStream>();
+        private readonly DbControl dbControl;
 
-//        internal static void InitializeDbFetcher()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                FetcherStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-//                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-//            }
-//        }
+        public DbFetcher(DbControl dbControl)
+        {
+            this.dbControl = dbControl;
+        }
 
-//        internal static void CloseIOStreams()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                FetcherStreamDictionary?[filePath].Dispose();
-//                FetcherStreamDictionary[filePath] = null;
-//            }
-//        }
-
-        public static List<NodeBlock> SelectAllNodeBlocks()
+        public List<NodeBlock> SelectAllNodeBlocks()
         {
             var result = new List<NodeBlock>();
 
-            var lastNodeId = DbControl.FetchLastId(DbControl.NodePath);
+            var lastNodeId = dbControl.FetchLastId(DbControl.NodePath);
             // todo: Юра, проверь, может должно быть <=
             for (var nodeId = 1; nodeId < lastNodeId; ++nodeId)
             {
-                var candidateNodeBlock = DbReader.ReadNodeBlock(nodeId);
+                var candidateNodeBlock = dbControl.DbReader.ReadNodeBlock(nodeId);
                 if (candidateNodeBlock.Used)
                     result.Add(candidateNodeBlock);
             }
@@ -47,10 +33,8 @@ namespace GraphyDb.IO
         }
 
 
-
-
         // todo: review
-        public static HashSet<NodeBlock> SelectNodeBlocksByLabelAndProperties(string label,
+        public HashSet<NodeBlock> SelectNodeBlocksByLabelAndProperties(string label,
             Dictionary<string, object> props)
         {
             if (label == null && props.Count == 0)
@@ -63,14 +47,13 @@ namespace GraphyDb.IO
 
             if (label != null)
             {
-                bool ok = DbControl.LabelInvertedIndex.TryGetValue(label, out labelId);
+                bool ok = dbControl.LabelInvertedIndex.TryGetValue(label, out labelId);
 
                 if (!ok)
                 {
                     return new HashSet<NodeBlock>();
                 }
             }
-
 
 
             if (label != null && props.Count == 0)
@@ -90,12 +73,12 @@ namespace GraphyDb.IO
 
 
             var rawProps = new Dictionary<int, object>();
-            
+
             var fromPropNameIdToGoodNodeBlocks = new Dictionary<int, HashSet<NodeBlock>>();
-            
+
             foreach (var keyValuePair in props)
             {
-                bool ok = DbControl.PropertyNameInvertedIndex.TryGetValue(keyValuePair.Key, out var propertyNameId);
+                bool ok = dbControl.PropertyNameInvertedIndex.TryGetValue(keyValuePair.Key, out var propertyNameId);
                 if (!ok)
                 {
                     return new HashSet<NodeBlock>();
@@ -108,12 +91,12 @@ namespace GraphyDb.IO
             var propertyNameIds = new HashSet<int>(fromPropNameIdToGoodNodeBlocks.Keys);
 
 
-            var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
+            var lastPropertyId = dbControl.FetchLastId(DbControl.NodePropertyPath);
             // todo: Юра, проверь, может должно быть <=
             for (var propertyId = 1; propertyId < lastPropertyId; ++propertyId)
             {
                 var currentPropertyBlock =
-                    new NodePropertyBlock(DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, propertyId));
+                    new NodePropertyBlock(dbControl.DbReader                        .ReadPropertyBlock(DbControl.NodePropertyPath, propertyId));
                 if (!currentPropertyBlock.Used)
                     continue;
 
@@ -128,7 +111,7 @@ namespace GraphyDb.IO
                             continue;
                         break;
                     case PropertyType.String:
-                        if (DbReader.ReadGenericStringBlock(DbControl.StringPath,
+                        if (dbControl.DbReader.ReadGenericStringBlock(DbControl.StringPath,
                                 BitConverter.ToInt32(currentPropertyBlock.Value, 0)).Data !=
                             (string) rawProps[currentPropertyBlock.PropertyNameId])
                             continue;
@@ -147,7 +130,7 @@ namespace GraphyDb.IO
                         throw new NotSupportedException();
                 }
 
-                var currentNodeBlock = DbReader.ReadNodeBlock(currentPropertyBlock.NodeId);
+                var currentNodeBlock = dbControl.DbReader.ReadNodeBlock(currentPropertyBlock.NodeId);
                 if (labelId != 0 && currentNodeBlock.LabelId != labelId) continue;
 
                 fromPropNameIdToGoodNodeBlocks[currentPropertyBlock.PropertyNameId].Add(currentNodeBlock);

@@ -35,7 +35,7 @@ namespace GraphyDb.IO
             var result = new List<NodeBlock>();
 
             var lastNodeId = DbControl.FetchLastId(DbControl.NodePath);
-            // todo: Юра, проверь, может должно быть <=
+
             for (var nodeId = 1; nodeId < lastNodeId; ++nodeId)
             {
                 var candidateNodeBlock = DbReader.ReadNodeBlock(nodeId);
@@ -45,8 +45,6 @@ namespace GraphyDb.IO
 
             return result;
         }
-
-
 
 
         // todo: review
@@ -72,7 +70,6 @@ namespace GraphyDb.IO
             }
 
 
-
             if (label != null && props.Count == 0)
             {
                 var result = new HashSet<NodeBlock>();
@@ -90,9 +87,9 @@ namespace GraphyDb.IO
 
 
             var rawProps = new Dictionary<int, object>();
-            
+
             var fromPropNameIdToGoodNodeBlocks = new Dictionary<int, HashSet<NodeBlock>>();
-            
+
             foreach (var keyValuePair in props)
             {
                 bool ok = DbControl.PropertyNameInvertedIndex.TryGetValue(keyValuePair.Key, out var propertyNameId);
@@ -109,7 +106,7 @@ namespace GraphyDb.IO
 
 
             var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
-            // todo: Юра, проверь, может должно быть <=
+
             for (var propertyId = 1; propertyId < lastPropertyId; ++propertyId)
             {
                 var currentPropertyBlock =
@@ -128,9 +125,9 @@ namespace GraphyDb.IO
                             continue;
                         break;
                     case PropertyType.String:
-                        if (DbReader.ReadGenericStringBlock(DbControl.StringPath,
-                                BitConverter.ToInt32(currentPropertyBlock.Value, 0)).Data !=
-                            (string) rawProps[currentPropertyBlock.PropertyNameId])
+                        if (!(DbReader.ReadGenericStringBlock(DbControl.StringPath,
+                            BitConverter.ToInt32(currentPropertyBlock.Value, 0)).Data)
+                            .Equals((string) rawProps[currentPropertyBlock.PropertyNameId]))
                             continue;
                         break;
                     case PropertyType.Bool:

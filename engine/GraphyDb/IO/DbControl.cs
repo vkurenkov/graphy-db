@@ -156,11 +156,16 @@ namespace GraphyDb.IO
             EventualConsister.ChangedEntitiesQueue.Add(new KillConsisterEntity());
             ConsisterThread.Join();
 
+            IdStorageDictionary.Clear();
+            PropertyNameInvertedIndex.Clear();
+            LabelInvertedIndex.Clear();
+
             foreach (var filePath in DbControl.DbFilePaths)
             {
                 FileStreamDictionary?[filePath].Dispose();
                 FileStreamDictionary[filePath] = null;
             }
+
 
             idFileStream?.Dispose();
             idFileStream = null;
@@ -169,18 +174,8 @@ namespace GraphyDb.IO
 
         public static void DeleteDbFiles()
         {
-            ShutdownIO();
-            IdStorageDictionary.Clear();
-            PropertyNameInvertedIndex.Clear();
-            LabelInvertedIndex.Clear();
-
-
-            foreach (var filePath in DbFilePaths)
-            {
-                File.Delete(Path.Combine(DbPath, filePath));
-            }
-
-            File.Delete(Path.Combine(DbPath, IdStoragePath));
+            ShutdownIO();            
+            Directory.Delete(DbPath, true);
         }
 
         public static int AllocateId(string filePath)

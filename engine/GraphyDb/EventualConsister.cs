@@ -5,6 +5,13 @@ using GraphyDb.IO;
 
 namespace GraphyDb
 {
+    public class KillConsisterEntity : Entity
+    {
+    }
+
+
+
+
     public static class EventualConsister
     {
         public static readonly BlockingCollection<Entity> ChangedEntitiesQueue = new BlockingCollection<Entity>();
@@ -19,6 +26,11 @@ namespace GraphyDb
             {
                 var entity = ChangedEntitiesQueue.Take();
                 var entityType = entity.GetType();
+
+                if (entityType == typeof(KillConsisterEntity))
+                {
+                    return;
+                }
 
                 if (((entity.State & EntityState.Deleted) == EntityState.Deleted) &
                     ((entity.State & EntityState.Added) == EntityState.Added)) continue;

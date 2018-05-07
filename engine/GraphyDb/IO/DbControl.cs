@@ -153,6 +153,9 @@ namespace GraphyDb.IO
 
         public static void ShutdownIO()
         {
+            EventualConsister.ChangedEntitiesQueue.Add(new KillConsisterEntity());
+            ConsisterThread.Join();
+
             foreach (var filePath in DbControl.DbFilePaths)
             {
                 FileStreamDictionary?[filePath].Dispose();
@@ -171,7 +174,7 @@ namespace GraphyDb.IO
             PropertyNameInvertedIndex.Clear();
             LabelInvertedIndex.Clear();
 
-            
+
 
             foreach (var filePath in DbFilePaths)
             {

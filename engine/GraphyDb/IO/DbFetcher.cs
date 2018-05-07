@@ -30,28 +30,72 @@ namespace GraphyDb.IO
             }
         }
 
+        public static List<NodeBlock> SelectAllNodeBlocks()
+        {
+            var result = new List<NodeBlock>();
+
+            var lastNodeId = DbControl.FetchLastId(DbControl.NodePath);
+            // todo: Юра, проверь, может должно быть <=
+            for (var nodeId = 1; nodeId < lastNodeId; ++nodeId)
+            {
+                var candidateNodeBlock = DbReader.ReadNodeBlock(nodeId);
+                if (candidateNodeBlock.Used)
+                    result.Add(candidateNodeBlock);
+            }
+
+            return result;
+        }
+
+
+
 
         // todo: review
         public static HashSet<NodeBlock> SelectNodeBlocksByLabelAndProperties(string label,
             Dictionary<string, object> props)
         {
-            bool ok = DbControl.LabelInvertedIndex.TryGetValue(label, out var labelId);
-
-            if (!ok)
+            if (label == null && props.Count == 0)
             {
-                return new HashSet<NodeBlock>();
+                return new HashSet<NodeBlock>(SelectAllNodeBlocks());
+            }
+
+
+            var labelId = 0;
+
+            if (label != null)
+            {
+                bool ok = DbControl.LabelInvertedIndex.TryGetValue(label, out labelId);
+
+                if (!ok)
+                {
+                    return new HashSet<NodeBlock>();
+                }
+            }
+
+
+
+            if (label != null && props.Count == 0)
+            {
+                var result = new HashSet<NodeBlock>();
+
+                foreach (var nodeBlock in SelectAllNodeBlocks())
+                {
+                    if (nodeBlock.LabelId == labelId)
+                    {
+                        result.Add(nodeBlock);
+                    }
+                }
+
+                return result;
             }
 
 
             var rawProps = new Dictionary<int, object>();
-
-
+            
             var fromPropNameIdToGoodNodeBlocks = new Dictionary<int, HashSet<NodeBlock>>();
-
-
+            
             foreach (var keyValuePair in props)
             {
-                ok = DbControl.PropertyNameInvertedIndex.TryGetValue(keyValuePair.Key, out var propertyNameId);
+                bool ok = DbControl.PropertyNameInvertedIndex.TryGetValue(keyValuePair.Key, out var propertyNameId);
                 if (!ok)
                 {
                     return new HashSet<NodeBlock>();
@@ -65,6 +109,7 @@ namespace GraphyDb.IO
 
 
             var lastPropertyId = DbControl.FetchLastId(DbControl.NodePropertyPath);
+            // todo: Юра, проверь, может должно быть <=
             for (var propertyId = 1; propertyId < lastPropertyId; ++propertyId)
             {
                 var currentPropertyBlock =
@@ -103,7 +148,7 @@ namespace GraphyDb.IO
                 }
 
                 var currentNodeBlock = DbReader.ReadNodeBlock(currentPropertyBlock.NodeId);
-                if (currentNodeBlock.LabelId != labelId) continue;
+                if (labelId != 0 && currentNodeBlock.LabelId != labelId) continue;
 
                 fromPropNameIdToGoodNodeBlocks[currentPropertyBlock.PropertyNameId].Add(currentNodeBlock);
             }

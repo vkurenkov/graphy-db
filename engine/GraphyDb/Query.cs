@@ -192,7 +192,8 @@ namespace GraphyDb
                 throw new Exception("Query cannot end with To/From, please add one more Match");
             }
 
-            BackwardCleanup(relationSets.Count);
+            if (relationSets.Count > 0)
+                BackwardCleanup(relationSets.Count-1);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace GraphyDb
         public RelationSet(RelationsDirection direction)
         {
             Direction = direction;
+            Relations = new HashSet<Relation>();
         }
 
     }

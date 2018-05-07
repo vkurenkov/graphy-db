@@ -158,6 +158,12 @@ namespace GraphyDb.IO
         public static void DeleteDbFiles()
         {
             ShutdownIO();
+            IdStorageDictionary.Clear();
+            PropertyNameInvertedIndex.Clear();
+            LabelInvertedIndex.Clear();
+
+
+
             foreach (var filePath in DbFilePaths)
             {
                 File.Delete(Path.Combine(DbPath, filePath));
@@ -186,8 +192,8 @@ namespace GraphyDb.IO
             if (labelId != 0) return labelId;
             var newLabelId = AllocateId(LabelPath);
             DbWriter.WriteStringBlock(new LabelBlock(true, label, newLabelId));
-            LabelInvertedIndex[label] = labelId;
-            return labelId;
+            LabelInvertedIndex[label] = newLabelId;
+            return newLabelId;
         }
 
         public static int FetchPropertyNameId(string propertyName)

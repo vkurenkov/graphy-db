@@ -89,7 +89,7 @@ namespace GraphyDb.IO
                 foreach (var filePath in DbControl.DbFilePaths)
                 {
                     FileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-                        FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, BlockByteSize[filePath]);
+                        FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 10 * 1024 * 1024);
                 }
 
                 // Create new empty IdStorage if not present with next free id.
@@ -105,7 +105,7 @@ namespace GraphyDb.IO
                         IdStorageDictionary[filePath] = 1;
                     }
 
-                    idFileStream.Flush(true);
+//                    idFileStream.Flush(true);
                 }
                 else
                 {

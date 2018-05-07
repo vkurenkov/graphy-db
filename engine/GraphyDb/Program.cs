@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Policy;
 using System.Threading;
 using GraphyDb.IO;
 
@@ -12,40 +13,33 @@ namespace GraphyDb
 
         private static void Main(string[] args)
         {
-//            var nodesList = new List<Node>();
-//            for (var i = 0; i < 100; ++i) nodesList.Add(engine.AddNode("type1"));
-//            for (var i = 0; i < 100; ++i) nodesList.Add(engine.AddNode("type2"));
-//            for (var i = 0; i < 100; ++i) nodesList.Add(engine.AddNode("type3"));
-//            for (var i = 0; i < 300; ++i) nodesList[i]["prop1"] = 10;
-//            for (var i = 0; i < 300; ++i) nodesList[i]["prop2"] = true;
-//            for (var i = 0; i < 300; ++i) nodesList[i]["prop3"] = 11.2;
-//            for (var i = 0; i < 300; ++i) nodesList[i]["prop4"] = $"Alakazam{i}";
-
-
-            var sw = new Stopwatch();
-            var timesToRun = 20.0;
-            for (var i = 0; i < timesToRun; ++i)
+            // Sample benchmark which builds a graph => query it
+            var queryStopWatch = new Stopwatch();
+            var lastTimeQuery = queryStopWatch.Elapsed.TotalMilliseconds;
+            var buildStopwatch = new Stopwatch();
+            var lastTimeBuild = queryStopWatch.Elapsed.TotalMilliseconds;
+            var timesToRun = 10.0;
+            for (var iteration = 0; iteration < timesToRun; ++iteration)
             {
                 var engine = new DbEngine();
-                engine.DropDatabase();
-                Thread.Sleep(10);
-                engine = new DbEngine();
-                TestFullyConnectedHalfGraph(engine, 15);
-                sw.Start();
-                var query = new Query(engine);
-                var nodeMatch1 = query.Match(NodeDescription.Any());
-                var relationMatch = query.From(RelationDescription.Any());
-                var node2Match = query.Match(NodeDescription.Any());
-                query.Execute();
-                sw.Stop();
+                buildStopwatch.Start();
+                Primitives2DBuildBenchmark(engine,
+                    10); // Genereate fully connected graph where each node is connected with others by 2 relations and has 4 properties.
+                buildStopwatch.Stop();
+                queryStopWatch.Start();
+                Primitives2DQueryBenchmark(engine); 
+                queryStopWatch.Stop();
                 Console.WriteLine(
-                    $"Iteration {i}: {sw.Elapsed.Milliseconds}ms, {nodeMatch1.Nodes.Count}:" +
-                    $"{relationMatch.Relations.Count}:{node2Match.Nodes.Count}");
-                Thread.Sleep(10);
-                engine.DropDatabase();
+                    $"Iteration {iteration}\t Build: {buildStopwatch.Elapsed.TotalMilliseconds - lastTimeBuild:##.000}ms\t Query: {queryStopWatch.Elapsed.TotalMilliseconds - lastTimeQuery:##.000}ms");
+                lastTimeQuery = queryStopWatch.Elapsed.TotalMilliseconds;
+                lastTimeBuild = buildStopwatch.Elapsed.TotalMilliseconds;
+                engine.DropDatabase(); // Clean files before the next measure
             }
 
-            Console.WriteLine($"{sw.Elapsed.TotalMilliseconds / timesToRun} ms per iteration");
+            Console.WriteLine(
+                $"Build: {buildStopwatch.Elapsed.TotalMilliseconds / timesToRun:##.000} ms per iteration");
+            Console.WriteLine(
+                $"Query: {queryStopWatch.Elapsed.TotalMilliseconds / timesToRun:##.000} ms per iteration");
             Console.ReadLine();
         }
 
@@ -55,6 +49,24 @@ namespace GraphyDb
             for (var i = 0; i < 100; i++)
             {
                 nodesList.Add(dbEngine.AddNode("node"));
+            }
+
+            dbEngine.SaveChanges();
+        }
+
+        private static void Add100NodesWith100Properties(DbEngine dbEngine, int run)
+        {
+            var nodesList = new List<Node>();
+            for (var i = 0; i < 100; i++)
+            {
+                nodesList.Add(dbEngine.AddNode("node"));
+                for (var j = 0; j < 25; j++)
+                {
+                    nodesList[i]["floatProp"] = 1.23 * i;
+                    nodesList[i]["strProp"] = $"44{i}";
+                    nodesList[i]["intProp"] = 123 * i - i;
+                    nodesList[i]["boolProp"] = i % 2;
+                }
             }
 
             dbEngine.SaveChanges();
@@ -90,23 +102,44 @@ namespace GraphyDb
             dbEngine.SaveChanges();
         }
 
-        private static void TestFullyConnectedHalfGraph(DbEngine dbEngine, int nodesNum)
+        private static void Primitives2DBuildBenchmark(DbEngine dbEngine, int nodesNum)
         {
+            Random rnd = new Random();
+            var shapeProp = new List<string>() {"box", "circle", "triangle"};
+            var colorProp = new List<string>() {"green", "red", "purple"};
             var nodesList = new List<Node>();
             for (var i = 0; i < nodesNum; i++)
             {
-                nodesList.Add(dbEngine.AddNode($"node{i % 2}"));
+                nodesList.Add(dbEngine.AddNode($"node"));
+                nodesList[i]["shape"] = shapeProp[rnd.Next(shapeProp.Count)];
+                nodesList[i]["color"] = colorProp[rnd.Next(colorProp.Count)];
+                nodesList[i]["x"] = (float) (rnd.NextDouble() + rnd.NextDouble() * 10 - rnd.NextDouble() * 10);
+                nodesList[i]["y"] = (float) (rnd.NextDouble() + rnd.NextDouble() * 10 - rnd.NextDouble() * 10);
             }
 
             for (var i = 0; i < nodesNum; i++)
             {
                 for (var j = 0; j < nodesNum; j++)
                 {
-                    var relation = dbEngine.AddRelation(nodesList[i], nodesList[j], $"edge{i % 2}{j % 2}");
+                    var relation1 = dbEngine.AddRelation(nodesList[i], nodesList[j],
+                        $"xAxis{rnd.Next(3)}"); // less, greater, equal
+                    var relation2 = dbEngine.AddRelation(nodesList[i], nodesList[j],
+                        $"yAxis{rnd.Next(3)}"); // less, greater, equal
                 }
             }
 
             dbEngine.SaveChanges();
+        }
+
+        private static void Primitives2DQueryBenchmark(DbEngine dbEngine)
+        {
+            var query = new Query(dbEngine);
+            var nodeMatch1 =
+                query.Match(new NodeDescription("node", new Dictionary<string, object>() {{"shape", "box"}}));
+            var relationMatch = query.From(new RelationDescription("xAxis0"));
+            var node2Match =
+                query.Match(new NodeDescription("node", new Dictionary<string, object>() {{"shape", "circle"}}));
+            query.Execute();
         }
     }
 }

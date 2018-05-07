@@ -29,13 +29,46 @@ namespace GraphyDb
                         var node = ((Node) entity);
                         DbWriter.InvalidateBlock(DbControl.NodePath, node.NodeId);
                         var nodeBlock = DbReader.ReadNodeBlock(node.NodeId);
-                        var nextPropertyId = nodeBlock.FirstPropertyId;
-                        while (nextPropertyId != 0)
+                        var nextNodePropertyId = nodeBlock.FirstPropertyId;
+                        while (nextNodePropertyId != 0)
                         {
                             var nextPropertyBlock =
-                                DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nextPropertyId);
-                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextPropertyId);
-                            nextPropertyId = nextPropertyBlock.NextPropertyId;
+                                DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nextNodePropertyId);
+                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextNodePropertyId);
+                            nextNodePropertyId = nextPropertyBlock.NextPropertyId;
+                        }
+
+                        var nextOutRelationId = nodeBlock.FirstOutRelationId;
+                        while (nextOutRelationId != 0)
+                        {
+                            var nextOutRelationBLock = DbReader.ReadRelationBlock(nextOutRelationId);
+                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextOutRelationId);
+                            var nextRelationPropertyId = nextOutRelationBLock.FirstPropertyId;
+                            while (nextRelationPropertyId != 0)
+                            {
+                                var nextPropertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath,
+                                    nextRelationPropertyId);
+                                DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                nextRelationPropertyId = nextPropertyBlock.NextPropertyId;
+                            }
+
+                            nextOutRelationId = nextOutRelationBLock.FirstNodeNextRelation;
+                        }
+
+                        var nextInRelationId = nodeBlock.FirstInRelationId;
+                        while (nextInRelationId != 0)
+                        {
+                            var nextInRelationBlock = DbReader.ReadRelationBlock(nextInRelationId);
+                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextInRelationId);
+                            var nextRelationPropertyId = nextInRelationBlock.FirstPropertyId;
+                            while (nextRelationPropertyId != 0)
+                            {
+                                var nextPropertyBlock =
+                                    DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                nextRelationPropertyId = nextPropertyBlock.NextPropertyId;
+                            }
+                            nextInRelationId = nextInRelationBlock.SecondNodeNextRelation;
                         }
                     }
                     else if (entityType == typeof(Relation))
@@ -230,7 +263,6 @@ namespace GraphyDb
                                     byteValue = BitConverter.GetBytes((float) property.Value);
                                     break;
                                 case PropertyType.String:
-                                    // Invalidate old string block, Add New String Block, write its ide as byte value
                                     DbWriter.InvalidateBlock(DbControl.StringPath,
                                         BitConverter.ToInt32(oldPropertyBlock.Value, 0));
                                     var newStringId = DbControl.AllocateId(DbControl.StringPath);

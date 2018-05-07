@@ -18,7 +18,9 @@ namespace GraphyDb.IO
         internal const string NodePropertyPath = "node_property.storage.db";
         internal const string RelationPropertyPath = "relation_property.storage.db";
         internal const string PropertyNamePath = "property_name.storage.db";
+
         internal const string StringPath = "string.storage.db";
+
 //        internal const string ConsisterPath = "consister.log";
         internal const string IdStoragePath = "id.storage";
         internal static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
@@ -48,7 +50,9 @@ namespace GraphyDb.IO
         };
 
         private static FileStream idFileStream;
-        internal static readonly ConcurrentDictionary<string, int> IdStorageDictionary = new ConcurrentDictionary<string, int>();
+
+        internal static readonly ConcurrentDictionary<string, int> IdStorageDictionary =
+            new ConcurrentDictionary<string, int>();
 
         // Paths to storage files
         internal static List<String> DbFilePaths = new List<string>
@@ -63,7 +67,11 @@ namespace GraphyDb.IO
         };
 
         internal static ConcurrentDictionary<string, int> LabelInvertedIndex = new ConcurrentDictionary<string, int>();
-        internal static ConcurrentDictionary<string, int> PropertyNameInvertedIndex = new ConcurrentDictionary<string, int>();
+
+        internal static ConcurrentDictionary<string, int> PropertyNameInvertedIndex =
+            new ConcurrentDictionary<string, int>();
+
+        internal static Thread ConsisterThread;
 
         /// <summary>
         /// Create storage files if missing
@@ -114,7 +122,7 @@ namespace GraphyDb.IO
                 for (var i = 1; i < FetchLastId(LabelPath); ++i)
                 {
                     var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
-                    LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;                
+                    LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
                 }
 
                 for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)
@@ -131,6 +139,8 @@ namespace GraphyDb.IO
             }
             finally
             {
+                ConsisterThread = new Thread(EventualConsister.ConsisterMonitor);
+                ConsisterThread.Start();
                 initializedIOFlag = true;
             }
         }

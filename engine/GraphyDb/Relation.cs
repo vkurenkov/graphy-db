@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using GraphyDb.IO;
+using ZeroFormatter;
 
 namespace GraphyDb
 {
+    [ZeroFormattable]
     public class Relation : Entity, IEquatable<Relation>
     {
         public int RelationId;

@@ -7,27 +7,27 @@ namespace GraphyDb.IO
 {
     internal static class DbWriter
     {
-        private static readonly Dictionary<string, FileStream>
-            WriteFileStreamDictionary = new Dictionary<string, FileStream>();
-
-        internal static void InitializeDbWriter()
-        {
-            foreach (var filePath in DbControl.DbFilePaths)
-            {
-                WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-                    FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-            }
-        }
+//        private static readonly Dictionary<string, FileStream>
+//            WriteFileStreamDictionary = new Dictionary<string, FileStream>();
+//
+//        internal static void InitializeDbWriter()
+//        {
+//            foreach (var filePath in DbControl.DbFilePaths)
+//            {
+//                WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
+//                    FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+//            }
+//        }
 
 
         public static void InvalidateBlock(string filePath, int id)
         {
-            WriteFileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin);
-            var changedFirstByte = (byte) (WriteFileStreamDictionary[filePath].ReadByte() & 254);
-            WriteFileStreamDictionary[filePath]
+            DbControl.FileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin);
+            var changedFirstByte = (byte) (DbControl.FileStreamDictionary[filePath].ReadByte() & 254);
+            DbControl.FileStreamDictionary[filePath]
                 .Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
-            WriteFileStreamDictionary[filePath].WriteByte(changedFirstByte);
-            WriteFileStreamDictionary[filePath].Flush();
+            DbControl.FileStreamDictionary[filePath].WriteByte(changedFirstByte);
+            DbControl.FileStreamDictionary[filePath].Flush();
         }
 
         public static void WriteNodeBlock(NodeBlock e)
@@ -119,18 +119,21 @@ namespace GraphyDb.IO
         private static void WriteBlock(string filePath, int blockNumber, byte[] block)
         {
             int offset = blockNumber * DbControl.BlockByteSize[filePath];
-            WriteFileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            WriteFileStreamDictionary[filePath].Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
-            WriteFileStreamDictionary[filePath].Flush();
+//            DbControl.FileStreamDictionary[filePath].Lock(0, DbControl.FileStreamDictionary[filePath].Length);
+            DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            DbControl.FileStreamDictionary[filePath]
+                .WriteAsync(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
+            DbControl.FileStreamDictionary[filePath].FlushAsync();
+//            DbControl.FileStreamDictionary[filePath].Unlock(0, DbControl.FileStreamDictionary[filePath].Length);        
         }
 
-        public static void CloseIOStreams()
-        {
-            foreach (var filePath in DbControl.DbFilePaths)
-            {
-                WriteFileStreamDictionary?[filePath].Dispose();
-                WriteFileStreamDictionary[filePath] = null;
-            }
-        }
+        //        public static void CloseIOStreams()
+        //        {
+        //            foreach (var filePath in DbControl.DbFilePaths)
+        //            {
+        //                WriteFileStreamDictionary?[filePath].Dispose();
+        //                WriteFileStreamDictionary[filePath] = null;
+        //            }
+        //        }
     }
 }

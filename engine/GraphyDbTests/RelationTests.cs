@@ -13,7 +13,7 @@ namespace GraphyDbTests
         /// <summary>
         /// Used for Thread.Sleep due to eventual consistency properties of the database
         /// </summary>
-        private const int ConsistencyDelayMs = 1000;
+        private const int ConsistencyDelayMs = 0;
 
         [TestInitialize]
         public void DropDatabase()

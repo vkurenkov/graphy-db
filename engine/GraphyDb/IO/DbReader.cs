@@ -56,7 +56,8 @@ namespace GraphyDb.IO
                 SecondNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0),
                 SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0),
                 FirstPropertyId = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0),
-                LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0)
+                LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0),
+                RelationId = relationId
             };
             return e;
         }

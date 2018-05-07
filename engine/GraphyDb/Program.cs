@@ -15,8 +15,12 @@ namespace GraphyDb
 
         private static void Main(string[] args)
         {
-            Trace.AutoFlush = true;
-
+            Repeat();
+            Console.WriteLine();
+            Repeat();
+        }
+        private static void Repeat()
+        {
             IO.DbControl.InitializeIO();
 
             DbWriter.WriteStringBlock(new LabelBlock(true, "Branda", 1));
@@ -31,14 +35,14 @@ namespace GraphyDb
 
             Console.WriteLine($"Label: \"{l.Data}\", Property: \"{p.Data}\", String: \"{s.Data}\"");
 
-            DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, new byte[4]{5,6,12,1}, 32, 2));
+            DbWriter.WritePropertyBlock(new NodePropertyBlock(1, false, PropertyType.Float, 12, new byte[4] { 5, 6, 12, 1 }, 32, 2));
             var np = new NodePropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, 1));
 
-            DbWriter.WritePropertyBlock(new RelationPropertyBlock(1, true, PropertyType.Bool, 12, new byte[4]{0,0,0,1}, 32, 2));
+            DbWriter.WritePropertyBlock(new RelationPropertyBlock(1, true, PropertyType.Bool, 12, new byte[4] { 0, 0, 0, 1 }, 32, 2));
             var ep = new RelationPropertyBlock(IO.DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, 1));
 
-            Console.WriteLine($"NodeProperty type {np.PropertyType}, {np.PropertyNameId}:{BitConverter.ToSingle(np.Value,0)}");
-            Console.WriteLine($"RelationProperty type {ep.PropertyType}, {ep.PropertyNameId}:{BitConverter.ToBoolean(ep.Value,3)}");
+            Console.WriteLine($"NodeProperty type {np.PropertyType}, {np.PropertyNameId}:{BitConverter.ToSingle(np.Value, 0)}");
+            Console.WriteLine($"RelationProperty type {ep.PropertyType}, {ep.PropertyNameId}:{BitConverter.ToBoolean(ep.Value, 3)}");
 
 
             Console.ReadLine();

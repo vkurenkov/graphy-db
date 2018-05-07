@@ -131,5 +131,109 @@ namespace GraphyDbTests
             Assert.AreEqual(relations.Relations.Count, 1);
             Assert.AreEqual(nodes1.Nodes.First().Label, Node1Label);
         }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_Node_By_From_Query()
+        {
+            const string Node1Label = "aaa";
+            const string Node2Label = "bbb";
+            const string RelationLabel = "x";
+            var engine = new DbEngine();
+
+            var node1 = engine.AddNode(Node1Label);
+            var node2 = engine.AddNode(Node2Label);
+            var relation1 = engine.AddRelation(node1, node2, RelationLabel);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var nodes1 = query.Match(new NodeDescription(Node2Label));
+            var relations = query.From(new RelationDescription(RelationLabel));
+            var nodes2 = query.Match(new NodeDescription(Node1Label));
+            query.Execute();
+            Assert.AreEqual(relations.Relations.First().Label, RelationLabel);
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_Node_By_2_From_Query()
+        {
+            const string Node1Label = "aaa";
+            const string Node2Label = "bbb";
+            const string Node3Label = "ccc";
+            const string RelationLabel = "x";
+            const string RelationLabel1 = "y";
+            var engine = new DbEngine();
+
+            var node1 = engine.AddNode(Node1Label);
+            var node2 = engine.AddNode(Node2Label);
+            var node3 = engine.AddNode(Node3Label);
+            var relation1 = engine.AddRelation(node1, node2, RelationLabel);
+            var relation2 = engine.AddRelation(node2, node3, RelationLabel1);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var nodes3 = query.Match(new NodeDescription(Node3Label));
+            var relations32 = query.From(new RelationDescription(RelationLabel1));
+            var nodes2 = query.Match(new NodeDescription(Node2Label));
+            var relations21 = query.From(new RelationDescription(RelationLabel));
+            var nodes1 = query.Match(new NodeDescription(Node1Label));
+            query.Execute();
+
+            Assert.AreEqual(relations21.Relations.First().Label, RelationLabel);
+            Assert.AreEqual(relations32.Relations.First().Label, RelationLabel1);
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_Node_By_To_Query()
+        {
+            const string Node1Label = "aaa";
+            const string Node2Label = "bbb";
+            const string RelationLabel = "x";
+            var engine = new DbEngine();
+
+            var node1 = engine.AddNode(Node1Label);
+            var node2 = engine.AddNode(Node2Label);
+            var relation1 = engine.AddRelation(node1, node2, RelationLabel);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var nodes1 = query.Match(new NodeDescription(Node1Label));
+            var relations = query.To(new RelationDescription(RelationLabel));
+            var nodes2 = query.Match(new NodeDescription(Node2Label));
+            query.Execute();
+            Assert.AreEqual(relations.Relations.First().Label, RelationLabel);
+        }
+
+        [TestCategory("Querying"), TestMethod]
+        public void Match_Node_By_2_To_Query()
+        {
+            const string Node1Label = "aaa";
+            const string Node2Label = "bbb";
+            const string Node3Label = "ccc";
+            const string RelationLabel = "x";
+            const string RelationLabel1 = "y";
+            var engine = new DbEngine();
+
+            var node1 = engine.AddNode(Node1Label);
+            var node2 = engine.AddNode(Node2Label);
+            var node3 = engine.AddNode(Node3Label);
+            var relation1 = engine.AddRelation(node1, node2, RelationLabel);
+            var relation2 = engine.AddRelation(node2, node3, RelationLabel1);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var nodes1 = query.Match(new NodeDescription(Node1Label));
+            var relations12 = query.To(new RelationDescription(RelationLabel));
+            var nodes2 = query.Match(new NodeDescription(Node2Label));
+            var relations23 = query.To(new RelationDescription(RelationLabel1));
+            var nodes3 = query.Match(new NodeDescription(Node3Label));
+            query.Execute();
+
+            Assert.AreEqual(relations12.Relations.First().Label, RelationLabel);
+            Assert.AreEqual(relations23.Relations.First().Label, RelationLabel1);
+        }
     }
 }

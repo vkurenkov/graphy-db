@@ -203,8 +203,8 @@ namespace GraphyDb.IO
             LabelInvertedIndex.TryGetValue(label, out var labelId);
             if (labelId != 0) return labelId;
             var newLabelId = AllocateId(LabelPath);
-            DbWriter.WriteStringBlock(new LabelBlock(true, label, newLabelId));
             LabelInvertedIndex[label] = newLabelId;
+            DbWriter.WriteStringBlock(new LabelBlock(true, label, newLabelId));
             return newLabelId;
         }
 

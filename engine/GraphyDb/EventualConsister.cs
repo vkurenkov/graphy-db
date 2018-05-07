@@ -172,7 +172,8 @@ namespace GraphyDb
                                 FirstNodePreviousRelationId = 0,
                                 SecondNodePreviousRelationId = 0,
                                 LabelId = DbControl.FetchLabelId(relation.Label),
-                                FirstPropertyId = 0
+                                FirstPropertyId = 0,
+                                RelationId = relation.RelationId
                             };
 
                             // Read Source, Target nodes to change the links in them and get their current links

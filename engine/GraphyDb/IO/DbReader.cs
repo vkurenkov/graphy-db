@@ -46,16 +46,19 @@ namespace GraphyDb.IO
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.RelationPath]];
             ReadBlock(DbControl.RelationPath, relationId, buffer);
-            RelationBlock e = new RelationBlock();
-            e.Used = BitConverter.ToBoolean(buffer, 0);
-            e.FirstNodeId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
-            e.SecondNodeId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
-            e.FirstNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
-            e.FirstNodeNextRelation = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
-            e.SecondNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0);
-            e.SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0);
-            e.FirstPropertyId = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0);
-            e.LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0);
+            RelationBlock e = new RelationBlock
+            {
+                Used = BitConverter.ToBoolean(buffer, 0),
+                FirstNodeId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
+                SecondNodeId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0),
+                FirstNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0),
+                FirstNodeNextRelation = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0),
+                SecondNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0),
+                SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0),
+                FirstPropertyId = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0),
+                LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0),
+                RelationId = relationId
+            };
             return e;
         }
 

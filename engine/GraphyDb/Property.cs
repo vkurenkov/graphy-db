@@ -42,7 +42,7 @@ namespace GraphyDb
 
             Key = key;
 
-            Value = value;
+            this.value = value;
 
             Db = parent.Db;
 

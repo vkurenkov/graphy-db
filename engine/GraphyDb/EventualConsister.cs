@@ -9,6 +9,7 @@ namespace GraphyDb
     {
         public static readonly BlockingCollection<Entity> ChangedEntitiesQueue = new BlockingCollection<Entity>();
 
+
         public static void ConsisterMonitor()
         {
             var th = Thread.CurrentThread;
@@ -35,6 +36,12 @@ namespace GraphyDb
                             var nextPropertyBlock =
                                 DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nextNodePropertyId);
                             DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextNodePropertyId);
+                            if (nextPropertyBlock.PropertyType is PropertyType.String)
+                            {
+                                DbWriter.InvalidateBlock(DbControl.StringPath,
+                                    BitConverter.ToInt32(nextPropertyBlock.Value, 0));
+                            }
+
                             nextNodePropertyId = nextPropertyBlock.NextPropertyId;
                         }
 
@@ -42,13 +49,19 @@ namespace GraphyDb
                         while (nextOutRelationId != 0)
                         {
                             var nextOutRelationBLock = DbReader.ReadRelationBlock(nextOutRelationId);
-                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextOutRelationId);
+                            DbWriter.InvalidateBlock(DbControl.RelationPath, nextOutRelationId);
                             var nextRelationPropertyId = nextOutRelationBLock.FirstPropertyId;
                             while (nextRelationPropertyId != 0)
                             {
                                 var nextPropertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath,
                                     nextRelationPropertyId);
                                 DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                if (nextPropertyBlock.PropertyType is PropertyType.String)
+                                {
+                                    DbWriter.InvalidateBlock(DbControl.StringPath,
+                                        BitConverter.ToInt32(nextPropertyBlock.Value, 0));
+                                }
+
                                 nextRelationPropertyId = nextPropertyBlock.NextPropertyId;
                             }
 
@@ -59,15 +72,22 @@ namespace GraphyDb
                         while (nextInRelationId != 0)
                         {
                             var nextInRelationBlock = DbReader.ReadRelationBlock(nextInRelationId);
-                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextInRelationId);
+                            DbWriter.InvalidateBlock(DbControl.RelationPath, nextInRelationId);
                             var nextRelationPropertyId = nextInRelationBlock.FirstPropertyId;
                             while (nextRelationPropertyId != 0)
                             {
                                 var nextPropertyBlock =
                                     DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
                                 DbWriter.InvalidateBlock(DbControl.RelationPropertyPath, nextRelationPropertyId);
+                                if (nextPropertyBlock.PropertyType is PropertyType.String)
+                                {
+                                    DbWriter.InvalidateBlock(DbControl.StringPath,
+                                        BitConverter.ToInt32(nextPropertyBlock.Value, 0));
+                                }
+
                                 nextRelationPropertyId = nextPropertyBlock.NextPropertyId;
                             }
+
                             nextInRelationId = nextInRelationBlock.SecondNodeNextRelation;
                         }
                     }
@@ -82,6 +102,12 @@ namespace GraphyDb
                             var nextPropertyBlock =
                                 DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, nextPropertyId);
                             DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextPropertyId);
+                            if (nextPropertyBlock.PropertyType is PropertyType.String)
+                            {
+                                DbWriter.InvalidateBlock(DbControl.StringPath,
+                                    BitConverter.ToInt32(nextPropertyBlock.Value, 0));
+                            }
+
                             nextPropertyId = nextPropertyBlock.NextPropertyId;
                         }
                     }

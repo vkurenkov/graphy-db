@@ -12,8 +12,6 @@ namespace GraphyDb
         Bool = 2,
         Float = 3
     }
-
-
     public abstract class Property : Entity
     {
         static readonly List<Type> SupportedTypes =

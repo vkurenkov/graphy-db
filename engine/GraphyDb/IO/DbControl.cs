@@ -19,7 +19,7 @@ namespace GraphyDb.IO
         internal const string RelationPropertyPath = "relation_property.storage.db";
         internal const string PropertyNamePath = "property_name.storage.db";
         internal const string StringPath = "string.storage.db";
-        internal const string ConsisterPath = "consister.log";
+//        internal const string ConsisterPath = "consister.log";
         internal const string IdStoragePath = "id.storage";
         internal static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
         private static bool initializedIOFlag = false;
@@ -114,10 +114,7 @@ namespace GraphyDb.IO
                 for (var i = 1; i < FetchLastId(LabelPath); ++i)
                 {
                     var labelBlock = new LabelBlock(DbReader.ReadGenericStringBlock(LabelPath, i));
-                    LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;
-                    Console.WriteLine(ex);
-                    TraceSource.TraceEvent(TraceEventType.Error, 1,
-                        $"Database Initialization Falied: {ex}");
+                    LabelInvertedIndex[labelBlock.Data] = labelBlock.Id;                
                 }
 
                 for (var i = 1; i < FetchLastId(PropertyNamePath); ++i)

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace GraphyDb.IO
 {
-    //TODO Make it use its own FileStreams?
     internal static class DbFetcher
     {
         internal static readonly Dictionary<string, FileStream>

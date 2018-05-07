@@ -13,6 +13,7 @@ namespace GraphyDb
         {
             var th = Thread.CurrentThread;
             th.Name = "ConsisterMonitor";
+
             while (true)
             {
                 var entity = ChangedEntitiesQueue.Take();
@@ -25,20 +26,56 @@ namespace GraphyDb
                 {
                     if (entityType == typeof(Node))
                     {
-                        DbWriter.InvalidateBlock(DbControl.NodePath, ((Node) entity).NodeId);
+                        var node = ((Node) entity);
+                        DbWriter.InvalidateBlock(DbControl.NodePath, node.NodeId);
+                        var nodeBlock = DbReader.ReadNodeBlock(node.NodeId);
+                        var nextPropertyId = nodeBlock.FirstPropertyId;
+                        while (nextPropertyId != 0)
+                        {
+                            var nextPropertyBlock =
+                                DbReader.ReadPropertyBlock(DbControl.NodePropertyPath, nextPropertyId);
+                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextPropertyId);
+                            nextPropertyId = nextPropertyBlock.NextPropertyId;
+                        }
                     }
                     else if (entityType == typeof(Relation))
                     {
-                        DbWriter.InvalidateBlock(DbControl.RelationPath, ((Relation) entity).RelationId);
+                        var relation = ((Relation) entity);
+                        DbWriter.InvalidateBlock(DbControl.RelationPath, relation.RelationId);
+                        var relationBlock = DbReader.ReadRelationBlock(relation.RelationId);
+                        var nextPropertyId = relationBlock.FirstPropertyId;
+                        while (nextPropertyId != 0)
+                        {
+                            var nextPropertyBlock =
+                                DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath, nextPropertyId);
+                            DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nextPropertyId);
+                            nextPropertyId = nextPropertyBlock.NextPropertyId;
+                        }
                     }
                     else if (entityType == typeof(NodeProperty))
                     {
-                        DbWriter.InvalidateBlock(DbControl.NodePropertyPath, ((NodeProperty) entity).PropertyId);
+                        var nodeProperty = ((NodeProperty) entity);
+                        if (nodeProperty.PropertyType is PropertyType.String)
+                        {
+                            DbWriter.InvalidateBlock(DbControl.StringPath, (int) nodeProperty.Value);
+                        }
+
+                        DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nodeProperty.PropertyId);
                     }
                     else if (entityType == typeof(RelationProperty))
                     {
+                        var relationProperty = ((RelationProperty) entity);
+                        if (relationProperty.PropertyType is PropertyType.String)
+                        {
+                            DbWriter.InvalidateBlock(DbControl.StringPath, (int) relationProperty.Value);
+                        }
+
                         DbWriter.InvalidateBlock(DbControl.RelationPropertyPath,
-                            ((RelationProperty) entity).PropertyId);
+                            relationProperty.PropertyId);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Not supported Entity Type");
                     }
 
                     continue;
@@ -114,7 +151,14 @@ namespace GraphyDb
                                     byteValue = BitConverter.GetBytes((float) property.Value);
                                     break;
                                 case PropertyType.String:
-                                    throw new NotImplementedException("String support is not available.");
+                                    // Add to String Storage, get returned pointer to the string storage, write it as the byteValue
+                                    var newStringId = DbControl.AllocateId(DbControl.StringPath);
+                                    DbWriter.WriteStringBlock(new StringBlock(true, (string) property.Value,
+                                        newStringId));
+                                    byteValue = BitConverter.GetBytes(newStringId);
+                                    break;
+                                default:
+                                    throw new NotSupportedException();
                             }
 
                             int parentId;
@@ -168,7 +212,9 @@ namespace GraphyDb
                         case NodeProperty _: //
                         case RelationProperty _:
                             var property = (Property) entity;
-                            var propertyPath = (property is NodeProperty) ? DbControl.NodePropertyPath : DbControl.RelationPropertyPath;
+                            var propertyPath = (property is NodeProperty)
+                                ? DbControl.NodePropertyPath
+                                : DbControl.RelationPropertyPath;
                             var oldPropertyBlock = DbReader.ReadPropertyBlock(propertyPath, property.PropertyId);
 
                             byte[] byteValue = new byte[4];
@@ -184,7 +230,14 @@ namespace GraphyDb
                                     byteValue = BitConverter.GetBytes((float) property.Value);
                                     break;
                                 case PropertyType.String:
-                                    throw new NotImplementedException("String support is not available.");
+                                    // Invalidate old string block, Add New String Block, write its ide as byte value
+                                    DbWriter.InvalidateBlock(DbControl.StringPath,
+                                        BitConverter.ToInt32(oldPropertyBlock.Value, 0));
+                                    var newStringId = DbControl.AllocateId(DbControl.StringPath);
+                                    DbWriter.WriteStringBlock(new StringBlock(true, (string) property.Value,
+                                        newStringId));
+                                    byteValue = BitConverter.GetBytes(newStringId);
+                                    break;
                                 default:
                                     throw new NotSupportedException("Such Property dtye is not supported");
                             }
@@ -193,10 +246,8 @@ namespace GraphyDb
                             DbWriter.WritePropertyBlock(oldPropertyBlock);
                             break;
                     }
-
                 }
             }
-
         }
     }
 }

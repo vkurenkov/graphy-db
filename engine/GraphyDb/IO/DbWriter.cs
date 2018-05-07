@@ -72,7 +72,7 @@ namespace GraphyDb.IO
                     storagePath = DbControl.PropertyNamePath;
                     break;
                 default:
-                    throw new NotImplementedException("Unsupported string-like block type.");
+                    throw new NotSupportedException("Unsupported string-like block type.");
             }
 
             var buffer = new byte[DbControl.BlockByteSize[storagePath]];
@@ -98,7 +98,7 @@ namespace GraphyDb.IO
                     storagePath = DbControl.RelationPropertyPath;
                     break;
                 default:
-                    throw new NotImplementedException("Unsupported property-like block type.");
+                    throw new NotSupportedException("Unsupported property-like block type.");
             }
 
             var buffer = new byte[DbControl.BlockByteSize[storagePath]];

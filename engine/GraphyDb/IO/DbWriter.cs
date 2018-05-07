@@ -27,7 +27,7 @@ namespace GraphyDb.IO
             DbControl.FileStreamDictionary[filePath]
                 .Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin); //Cause ReadByte advances
             DbControl.FileStreamDictionary[filePath].WriteByte(changedFirstByte);
-            DbControl.FileStreamDictionary[filePath].Flush();
+            DbControl.FileStreamDictionary[filePath].Flush(true);
         }
 
         public static void WriteNodeBlock(NodeBlock e)
@@ -122,8 +122,8 @@ namespace GraphyDb.IO
 //            DbControl.FileStreamDictionary[filePath].Lock(0, DbControl.FileStreamDictionary[filePath].Length);
             DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
             DbControl.FileStreamDictionary[filePath]
-                .WriteAsync(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
-            DbControl.FileStreamDictionary[filePath].FlushAsync();
+                .Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
+            DbControl.FileStreamDictionary[filePath].Flush(true);
 //            DbControl.FileStreamDictionary[filePath].Unlock(0, DbControl.FileStreamDictionary[filePath].Length);        
         }
 

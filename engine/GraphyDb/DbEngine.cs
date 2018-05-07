@@ -153,7 +153,9 @@ namespace GraphyDb
                         var nodeProperty = ((NodeProperty)entity);
                         if (nodeProperty.PropertyType is PropertyType.String)
                         {
-                            DbWriter.InvalidateBlock(DbControl.StringPath, (int)nodeProperty.Value);
+                            var nodePropertyBlock = DbReader.ReadPropertyBlock(DbControl.NodePropertyPath,
+                                nodeProperty.PropertyId);
+                            DbWriter.InvalidateBlock(DbControl.StringPath, BitConverter.ToInt32(nodePropertyBlock.Value, 0));
                         }
 
                         DbWriter.InvalidateBlock(DbControl.NodePropertyPath, nodeProperty.PropertyId);
@@ -161,9 +163,12 @@ namespace GraphyDb
                     else if (entityType == typeof(RelationProperty))
                     {
                         var relationProperty = ((RelationProperty)entity);
+                        
                         if (relationProperty.PropertyType is PropertyType.String)
                         {
-                            DbWriter.InvalidateBlock(DbControl.StringPath, (int)relationProperty.Value);
+                            var relationPropertyBlock = DbReader.ReadPropertyBlock(DbControl.RelationPropertyPath,
+                                relationProperty.PropertyId);
+                            DbWriter.InvalidateBlock(DbControl.StringPath, BitConverter.ToInt32(relationPropertyBlock.Value, 0));
                         }
 
                         DbWriter.InvalidateBlock(DbControl.RelationPropertyPath,

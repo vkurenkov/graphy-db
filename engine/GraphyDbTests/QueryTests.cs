@@ -13,7 +13,7 @@ namespace GraphyDbTests
         /// <summary>
         /// Used for Thread.Sleep due to eventual consistency properties of the database
         /// </summary>
-        private const int ConsistencyDelayMs = 200;
+        private const int ConsistencyDelayMs = 0;
 
         [TestInitialize]
         public void DropDatabase()
@@ -82,7 +82,7 @@ namespace GraphyDbTests
             const string Label = "Primitive";
             const string Property1Name = "PropertyName";
             const string Property1Value = "value";
-            const string Property2Name = "PropertyName";
+            const string Property2Name = "PropertyName1";
             const string Property2Value = "value";
             var engine = new DbEngine();
 
@@ -104,18 +104,18 @@ namespace GraphyDbTests
         [TestCategory("Querying"), TestMethod]
         public void Match_Node_By_Label_And_Relation()
         {
-            const string Node1Label = "Primitive";
-            const string Node2Label = "Primitive1";
-            const string RelationLabel = "Relation";
-            const string PropertyName = "PropertyName";
-            const string PropertyValue = "value";
+            const string Node1Label = "aaa";
+            const string Node2Label = "bbb";
+            const string RelationLabel = "x";
+            const string PropertyName = "PropName";
+            const string PropertyValue = "PropValue";
             var engine = new DbEngine();
 
             var node1 = engine.AddNode(Node1Label);
             var node2 = engine.AddNode(Node2Label);
-            var relation = engine.AddRelation(node1, node2, RelationLabel);
-            engine.AddRelation(node1, node2, RelationLabel + "Other");
-            relation[PropertyName] = PropertyValue;
+            var relation1 = engine.AddRelation(node1, node2, RelationLabel);
+            var relation2 = engine.AddRelation(node1, node2, RelationLabel + "_other");
+            relation1[PropertyName] = PropertyValue;
             engine.SaveChanges();
             Thread.Sleep(ConsistencyDelayMs);
 

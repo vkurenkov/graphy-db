@@ -13,7 +13,7 @@ namespace GraphyDbTests
         /// <summary>
         /// Used for Thread.Sleep due to eventual consistency properties of the database
         /// </summary>
-        private const int ConsistencyDelayMs = 200;
+        private const int ConsistencyDelayMs = 0;
 
         [TestInitialize]
         public void DropDatabase()
@@ -161,26 +161,6 @@ namespace GraphyDbTests
             Assert.AreEqual(foundNodes.Nodes.First()[PropertyName], PropertyValue);
         }
 
-        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
-        public void Delete_Property_From_Node()
-        {
-            const string NodeLabel = "Primitive";
-            const string PropertyName = "Property1";
-            const string PropertyValue = "PropertyValue";
-            var engine = new DbEngine();
-
-            var node = engine.AddNode(NodeLabel);
-            node[PropertyName] = PropertyValue;
-            engine.SaveChanges();
-            node.DeleteProperty(PropertyName);
-            engine.SaveChanges();
-            Thread.Sleep(ConsistencyDelayMs);
-
-            var query = new Query(engine);
-            var nodes = query.Match(new NodeDescription(NodeLabel));
-            Assert.IsTrue(!nodes.Nodes.First().Properties.Keys.Contains(PropertyName));
-        }
-
         [TestCategory("Nodes"), TestCategory("Properties"), TestMethod]
         public void Edit_Int_Property_Node()
         {
@@ -263,6 +243,86 @@ namespace GraphyDbTests
             var foundNodes = query.Match(new NodeDescription(Label));
             query.Execute();
             Assert.AreEqual(foundNodes.Nodes.First()[PropertyName], PropertyValueAfter);
+        }
+
+        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
+        public void Delete_String_Property_From_Node()
+        {
+            const string Label = "Primitive";
+            const string PropertyName = "StringProperty";
+            const string PropertyValue = "some value";
+            var engine = new DbEngine();
+
+            var node = engine.AddNode(Label);
+            node[PropertyName] = PropertyValue;
+            node.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes = query.Match(new NodeDescription(Label));
+            query.Execute();
+            Assert.AreEqual(foundNodes.Nodes.First().Properties.Count, 0);
+        }
+
+        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
+        public void Delete_Float_Property_From_Node()
+        {
+            const string Label = "Primitive";
+            const string PropertyName = "FloatProperty";
+            const float PropertyValue = 1.21f;
+            var engine = new DbEngine();
+
+            var node = engine.AddNode(Label);
+            node[PropertyName] = PropertyValue;
+            node.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes = query.Match(new NodeDescription(Label));
+            query.Execute();
+            Assert.AreEqual(foundNodes.Nodes.First().Properties.Count, 0);
+        }
+
+        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
+        public void Delete_Int_Property_From_Node()
+        {
+            const string Label = "Primitive";
+            const string PropertyName = "IntProperty";
+            const int PropertyValue = 5;
+            var engine = new DbEngine();
+
+            var node = engine.AddNode(Label);
+            node[PropertyName] = PropertyValue;
+            node.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes = query.Match(new NodeDescription(Label));
+            query.Execute();
+            Assert.AreEqual(foundNodes.Nodes.First().Properties.Count, 0);
+        }
+
+        [TestCategory("Properties"), TestCategory("Nodes"), TestMethod]
+        public void Delete_Boolean_Property_From_Node()
+        {
+            const string Label = "Primitive";
+            const string PropertyName = "BoolProperty";
+            const bool PropertyValue = true;
+            var engine = new DbEngine();
+
+            var node = engine.AddNode(Label);
+            node[PropertyName] = PropertyValue;
+            node.DeleteProperty(PropertyName);
+            engine.SaveChanges();
+            Thread.Sleep(ConsistencyDelayMs);
+
+            var query = new Query(engine);
+            var foundNodes = query.Match(new NodeDescription(Label));
+            query.Execute();
+            Assert.AreEqual(foundNodes.Nodes.First().Properties.Count, 0);
         }
         #endregion
     }

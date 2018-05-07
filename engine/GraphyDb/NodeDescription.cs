@@ -41,7 +41,7 @@ namespace GraphyDb
                 if (!node.Properties.ContainsKey(keyValue.Key))
                     return false;
 
-                if (node[keyValue.Key] != keyValue.Value)
+                if (!node[keyValue.Key].Equals(keyValue.Value))
                     return false;
             }
 

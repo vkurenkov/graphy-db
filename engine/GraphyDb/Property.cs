@@ -65,7 +65,7 @@ namespace GraphyDb
                     break;
                 case PropertyType.String:
                     value = DbReader.ReadGenericStringBlock(DbControl.StringPath,
-                        BitConverter.ToInt32(propertyBlock.Value, 0));
+                        BitConverter.ToInt32(propertyBlock.Value, 0)).Data;
                     break;
                 case PropertyType.Bool:
                     value = BitConverter.ToBoolean(propertyBlock.Value, 3);

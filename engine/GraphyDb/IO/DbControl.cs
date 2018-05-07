@@ -73,6 +73,9 @@ namespace GraphyDb.IO
 
         internal static Thread ConsisterThread;
 
+        internal static readonly Dictionary<string, FileStream>
+            FileStreamDictionary = new Dictionary<string, FileStream>();
+
         /// <summary>
         /// Create storage files if missing
         /// </summary>
@@ -82,9 +85,12 @@ namespace GraphyDb.IO
             try
             {
                 if (!Directory.Exists(DbPath)) Directory.CreateDirectory(DbPath);
-                DbWriter.InitializeDbWriter();
-                DbReader.InitializeDbReader();
-                DbFetcher.InitializeDbFetcher();
+
+                foreach (var filePath in DbControl.DbFilePaths)
+                {
+                    FileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
+                        FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+                }
 
                 // Create new empty IdStorage if not present with next free id.
                 // Else initialize .storage.db -> ID mapping
@@ -147,9 +153,12 @@ namespace GraphyDb.IO
 
         public static void ShutdownIO()
         {
-            DbReader.CloseIOStreams();
-            DbWriter.CloseIOStreams();
-            DbFetcher.CloseIOStreams();
+            foreach (var filePath in DbControl.DbFilePaths)
+            {
+                FileStreamDictionary?[filePath].Dispose();
+                FileStreamDictionary[filePath] = null;
+            }
+
             idFileStream?.Dispose();
             idFileStream = null;
             initializedIOFlag = false;
@@ -161,7 +170,6 @@ namespace GraphyDb.IO
             IdStorageDictionary.Clear();
             PropertyNameInvertedIndex.Clear();
             LabelInvertedIndex.Clear();
-
 
 
             foreach (var filePath in DbFilePaths)

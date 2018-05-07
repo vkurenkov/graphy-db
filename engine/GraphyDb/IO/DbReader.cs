@@ -8,26 +8,26 @@ namespace GraphyDb.IO
 {
     internal static class DbReader
     {
-        internal static readonly Dictionary<string, FileStream>
-            ReadFileStreamDictionary = new Dictionary<string, FileStream>();
-
-        internal static void InitializeDbReader()
-        {
-            foreach (var filePath in DbControl.DbFilePaths)
-            {
-                ReadFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-            }
-        }
-
-        internal static void CloseIOStreams()
-        {
-            foreach (var filePath in DbControl.DbFilePaths)
-            {
-                ReadFileStreamDictionary?[filePath].Dispose();
-                ReadFileStreamDictionary[filePath] = null;
-            }
-        }
+//        internal static readonly Dictionary<string, FileStream>
+//            ReadFileStreamDictionary = new Dictionary<string, FileStream>();
+//
+//        internal static void InitializeDbReader()
+//        {
+//            foreach (var filePath in DbControl.DbFilePaths)
+//            {
+//                ReadFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
+//                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
+//            }
+//        }
+//
+//        internal static void CloseIOStreams()
+//        {
+//            foreach (var filePath in DbControl.DbFilePaths)
+//            {
+//                ReadFileStreamDictionary?[filePath].Dispose();
+//                ReadFileStreamDictionary[filePath] = null;
+//            }
+//        }
 
 
         public static NodeBlock ReadNodeBlock(int nodeId)
@@ -46,18 +46,16 @@ namespace GraphyDb.IO
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.RelationPath]];
             ReadBlock(DbControl.RelationPath, relationId, buffer);
-            RelationBlock e = new RelationBlock
-            {
-                Used = BitConverter.ToBoolean(buffer, 0),
-                FirstNodeId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0),
-                SecondNodeId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0),
-                FirstNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0),
-                FirstNodeNextRelation = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0),
-                SecondNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0),
-                SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0),
-                FirstPropertyId = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0),
-                LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0)
-            };
+            RelationBlock e = new RelationBlock();
+            e.Used = BitConverter.ToBoolean(buffer, 0);
+            e.FirstNodeId = BitConverter.ToInt32(buffer.Skip(1).Take(4).ToArray(), 0);
+            e.SecondNodeId = BitConverter.ToInt32(buffer.Skip(5).Take(4).ToArray(), 0);
+            e.FirstNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(9).Take(4).ToArray(), 0);
+            e.FirstNodeNextRelation = BitConverter.ToInt32(buffer.Skip(13).Take(4).ToArray(), 0);
+            e.SecondNodePreviousRelationId = BitConverter.ToInt32(buffer.Skip(17).Take(4).ToArray(), 0);
+            e.SecondNodeNextRelation = BitConverter.ToInt32(buffer.Skip(21).Take(4).ToArray(), 0);
+            e.FirstPropertyId = BitConverter.ToInt32(buffer.Skip(25).Take(4).ToArray(), 0);
+            e.LabelId = BitConverter.ToInt32(buffer.Skip(29).Take(4).ToArray(), 0);
             return e;
         }
 
@@ -96,7 +94,8 @@ namespace GraphyDb.IO
                 case DbControl.NodePropertyPath:
                     return new NodePropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
                 case DbControl.RelationPropertyPath:
-                    return new RelationPropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty, nodeId);
+                    return new RelationPropertyBlock(id, used, dtype, propertyName, propertyValue, nextProperty,
+                        nodeId);
                 default:
                     throw new ArgumentException("Storage path is invalid.");
             }
@@ -111,10 +110,8 @@ namespace GraphyDb.IO
         public static void ReadBlock(string filePath, int blockNumber, byte[] block)
         {
             var offset = blockNumber * DbControl.BlockByteSize[filePath];
-            ReadFileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            ReadFileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
+            DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
+            DbControl.FileStreamDictionary[filePath].Read(block, 0, DbControl.BlockByteSize[filePath]);
         }
-
-      
     }
 }

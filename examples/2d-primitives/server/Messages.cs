@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public enum MessageType : byte { ParseObjects = 0, GetSideObjects = 1, Between = 2 };
+public enum MessageType : byte { ParseObjects = 0, GetSideObjects = 1 };
 
 public struct PrimitiveObject : IEquatable<PrimitiveObject>
 {

@@ -21,19 +21,8 @@ class Program
 
         while(true)
         {
-            Console.WriteLine("\n############################# REQUEST #############################");
-            Console.WriteLine("What kind of request do you want to send? (0 - GetSideObjects, 1 - Between)");
-            var line = Console.ReadLine();
-            if (String.IsNullOrWhiteSpace(line))
-            {
-                Console.WriteLine("Please, specify the request type. Abort.");
-                continue;
-            }
-
-            var requestType = Convert.ToInt32(line);
-            if (requestType == 0) SendSideObjects(client, remote);
-            else if (requestType == 1) SendBetween(client, remote);
-            else Console.WriteLine("Unknown request type. Abort.");
+            Console.WriteLine("\n############################# GET SIDE OBJECTS REQUEST #############################");
+            SendSideObjects(client, remote);
         }
     }
 
@@ -90,16 +79,18 @@ class Program
             stopWatch.Stop();
             Console.WriteLine("Answer is received.");
             Console.WriteLine("Request took " + stopWatch.Elapsed.ToString());
-            Console.WriteLine(Encoding.UTF8.GetString(answerBytes));
+
+            var foundObjects = JsonConvert.DeserializeObject<List<PrimitiveObject>>(Encoding.UTF8.GetString(answerBytes));
+            Console.WriteLine("Objects found: " + foundObjects.Count.ToString());
+            foreach(var obj in foundObjects)
+            {
+                Console.WriteLine(obj.ToString());
+            }
         }
         catch(Exception e)
         {
             Console.WriteLine("Request is not handled");
             Console.WriteLine(e);
         }
-    }
-    private static void SendBetween(UdpClient client, IPEndPoint remote)
-    {
-        throw new NotImplementedException();
     }
 }

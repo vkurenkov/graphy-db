@@ -11,12 +11,13 @@ using GraphyDb;
 class Program
 {
     private static DbEngine GraphDatabase = new DbEngine();
-    private static bool GraphIsOn = false;
     private static HashSet<PrimitiveObject> SeenObjects = new HashSet<PrimitiveObject>();
     private static TraceSource Logger = new TraceSource("Logger");
 
     private static void Main(string[] args)
     {
+        ExtractSeenObjects();
+
         var port = 9001;
         var server = new UdpClient(port);
         Logger.TraceInformation("Server is started.");
@@ -44,9 +45,8 @@ class Program
 
         if (messageType == MessageType.ParseObjects)
         {
-            Logger.TraceInformation("Parse objects message is received.");
+            //Logger.TraceInformation("Parse objects message is received.");
             var deserializedMessage = JsonConvert.DeserializeObject<ParseObjectsMessage>(decodedMessage);
-            Logger.TraceData(TraceEventType.Information, 0, deserializedMessage.Objects[0]);
             PutObjectsToDatabase(deserializedMessage);
         }
         else if(messageType == MessageType.GetSideObjects)
@@ -68,15 +68,12 @@ class Program
 
             Console.Write(deserializedMessage);
         }
-        else if(messageType == MessageType.Between)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     private static void PutObjectsToDatabase(ParseObjectsMessage message)
     {
-        if (!GraphIsOn) return;
+        var duration = new Stopwatch();
+        duration.Start();
 
         int numNewObjects = 0;
         foreach(var obj in message.Objects)
@@ -95,8 +92,12 @@ class Program
             }
         }
 
-        GraphDatabase.SaveChanges();
-        Logger.TraceInformation(numNewObjects.ToString() + " new primitives added to the graph database.");
+        duration.Stop();
+        if (numNewObjects != 0)
+        {
+            Logger.TraceInformation(numNewObjects.ToString() + " new primitives added to the graph database.");
+            Logger.TraceInformation("It took " + duration.Elapsed);
+        }
     }
     private static void CreateRelations(Node node)
     {
@@ -147,11 +148,26 @@ class Program
 
         GraphDatabase.SaveChanges();
     }
+    private static void ExtractSeenObjects()
+    {
+        var query = new Query(GraphDatabase);
+        var seenNodes = query.Match(NodeDescription.Any());
+        query.Execute();
+
+        foreach(var seenNode in seenNodes.Nodes)
+        {
+            SeenObjects.Add(new PrimitiveObject
+            {
+                Color = (string)seenNode["Color"],
+                Shape = (string)seenNode["Shape"],
+                X = (float)seenNode["X"],
+                Y = (float)seenNode["Y"]
+            });
+        }
+    }
 
     private static List<PrimitiveObject> GetSideObjects(GetSideObjects message)
     {
-        if (!GraphIsOn) return null;
-
         /* Form properties based on the provided message */
         var targetNodeProps = new Dictionary<String, object>();
         if (!String.IsNullOrWhiteSpace(message.Color))

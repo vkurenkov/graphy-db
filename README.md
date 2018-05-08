@@ -98,7 +98,7 @@ These classes represent results of a Query. `nodeSet.Nodes` is a `HashSet<Node>`
 
 The main class to create a Query. The following examples will help you understand its syntas:
 
-To get all Nodes mathcing particular `nodeDescription`:
+To get all Nodes matching particular `nodeDescription`:
 ```C#
 var query = new Query(engine);
 

@@ -67,12 +67,12 @@ engine.Delete(x); // x can be a Node or Relation
 
 Or call method Delete directly on Node or Relation:
 ```C#
-x.Delete() // x can be a Node or Relation
+x.Delete(); // x can be a Node or Relation
 ```
 
 To delete property:
 ```C#
-x.DeleteProperty("property_name") // x can be a Node or Relation
+x.DeleteProperty("property_name"); // x can be a Node or Relation
 ```
 
 Do not forget to commit changes on disk:
@@ -96,7 +96,7 @@ These classes represent results of a Query. `nodeSet.Nodes` is a `HashSet<Node>`
 
 * `Query(DbEngine engine)`
 
-The main class to create a Query. The following examples will help you understand its syntas:
+The main class to create a Query. The following examples will help you understand its syntax:
 
 To get all Nodes matching particular `nodeDescription`:
 ```C#

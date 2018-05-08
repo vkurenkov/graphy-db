@@ -100,13 +100,13 @@ The main class to create a Query. The following example will help you understand
 ```C#
 var query = new Query(engine);
 
-var A = query.Match(nodeDescriptionForA)
-var X = query.From(relationDescriptionForX)
-var B = query.Match(nodeDescriptionForB)
-var Y = query.To(relationDescriptionForY)
-var C = query.Match(nodeDescriptionForC)
+var A = query.Match(nodeDescriptionForA);
+var X = query.From(relationDescriptionForX);
+var B = query.Match(nodeDescriptionForB);
+var Y = query.To(relationDescriptionForY);
+var C = query.Match(nodeDescriptionForC);
 
-query.Execute()
+query.Execute();
 ```
 
 After `query.Execute()` objects `A`, `B` and `C` (which are of class `NodeSet`) will be populated with Nodes; `X`, `Y` (which are of class `RelationSet`) will be populated with Relations such that:

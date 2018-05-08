@@ -5,7 +5,7 @@ using GraphyDb.IO;
 
 namespace GraphyDb
 {
-    public class DbEngine
+    public class DbEngine: IDisposable
     {
         public List<Entity> ChangedEntities;
 
@@ -356,6 +356,11 @@ namespace GraphyDb
         public void DropDatabase()
         {
             DbControl.DeleteDbFiles();
+        }
+
+        public void Dispose()
+        {
+            DbControl.ShutdownIO();
         }
     }
 }

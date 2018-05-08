@@ -60,12 +60,6 @@ namespace GraphyDb
                     : goodRelation.To);
             }
 
-
-//            nodeSets[relationSetId].Nodes.IntersectWith(newPreviousLayerNodes);
-
-//            nodeSets[relationSetId].Nodes.Clear();
-//            nodeSets[relationSetId].Nodes.UnionWith(newPreviousLayerNodes);
-
             nodeSets[relationSetId].Nodes = newPreviousLayerNodes;
 
 

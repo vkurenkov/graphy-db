@@ -8,28 +8,6 @@ namespace GraphyDb.IO
 {
     internal static class DbReader
     {
-//        internal static readonly Dictionary<string, FileStream>
-//            ReadFileStreamDictionary = new Dictionary<string, FileStream>();
-//
-//        internal static void InitializeDbReader()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                ReadFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-//                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-//            }
-//        }
-//
-//        internal static void CloseIOStreams()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                ReadFileStreamDictionary?[filePath].Dispose();
-//                ReadFileStreamDictionary[filePath] = null;
-//            }
-//        }
-
-
         public static NodeBlock ReadNodeBlock(int nodeId)
         {
             var buffer = new byte[DbControl.BlockByteSize[DbControl.NodePath]];

@@ -21,7 +21,6 @@ namespace GraphyDb.IO
 
         internal const string StringPath = "string.storage.db";
 
-//        internal const string ConsisterPath = "consister.log";
         internal const string IdStoragePath = "id.storage";
         internal static readonly string DbPath = ConfigurationManager.AppSettings["dbPath"];
         private static bool initializedIOFlag = false;
@@ -120,7 +119,6 @@ namespace GraphyDb.IO
                         idFileStream.Seek(blockNumber * 4, SeekOrigin.Begin);
                         idFileStream.Read(storedIdBytes, 0, 4);
                         IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
-//                        Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
                     }
                 }
 
@@ -145,17 +143,12 @@ namespace GraphyDb.IO
             }
             finally
             {
-                ConsisterThread = new Thread(EventualConsister.ConsisterMonitor);
-                ConsisterThread.Start();
                 initializedIOFlag = true;
             }
         }
 
         public static void ShutdownIO()
         {
-            EventualConsister.ChangedEntitiesQueue.Add(new KillConsisterEntity());
-            ConsisterThread.Join();
-
             IdStorageDictionary.Clear();
             PropertyNameInvertedIndex.Clear();
             LabelInvertedIndex.Clear();

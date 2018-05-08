@@ -7,19 +7,6 @@ namespace GraphyDb.IO
 {
     internal static class DbWriter
     {
-//        private static readonly Dictionary<string, FileStream>
-//            WriteFileStreamDictionary = new Dictionary<string, FileStream>();
-//
-//        internal static void InitializeDbWriter()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                WriteFileStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-//                    FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-//            }
-//        }
-
-
         public static void InvalidateBlock(string filePath, int id)
         {
             DbControl.FileStreamDictionary[filePath].Seek(id * DbControl.BlockByteSize[filePath], SeekOrigin.Begin);
@@ -119,21 +106,9 @@ namespace GraphyDb.IO
         private static void WriteBlock(string filePath, int blockNumber, byte[] block)
         {
             int offset = blockNumber * DbControl.BlockByteSize[filePath];
-//            DbControl.FileStreamDictionary[filePath].Lock(0, DbControl.FileStreamDictionary[filePath].Length);
             DbControl.FileStreamDictionary[filePath].Seek(offset, SeekOrigin.Begin);
-            DbControl.FileStreamDictionary[filePath]
-                .Write(block, 0, DbControl.BlockByteSize[filePath]); //Maybe WriteAsync?
-            DbControl.FileStreamDictionary[filePath].Flush();
-//            DbControl.FileStreamDictionary[filePath].Unlock(0, DbControl.FileStreamDictionary[filePath].Length);        
+            DbControl.FileStreamDictionary[filePath].Write(block, 0, DbControl.BlockByteSize[filePath]);
+            DbControl.FileStreamDictionary[filePath].Flush();     
         }
-
-        //        public static void CloseIOStreams()
-        //        {
-        //            foreach (var filePath in DbControl.DbFilePaths)
-        //            {
-        //                WriteFileStreamDictionary?[filePath].Dispose();
-        //                WriteFileStreamDictionary[filePath] = null;
-        //            }
-        //        }
     }
 }

@@ -9,27 +9,6 @@ namespace GraphyDb.IO
 {
     internal static class DbFetcher
     {
-//        internal static readonly Dictionary<string, FileStream>
-//            FetcherStreamDictionary = new Dictionary<string, FileStream>();
-
-//        internal static void InitializeDbFetcher()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                FetcherStreamDictionary[filePath] = new FileStream(Path.Combine(DbControl.DbPath, filePath),
-//                    FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite);
-//            }
-//        }
-
-//        internal static void CloseIOStreams()
-//        {
-//            foreach (var filePath in DbControl.DbFilePaths)
-//            {
-//                FetcherStreamDictionary?[filePath].Dispose();
-//                FetcherStreamDictionary[filePath] = null;
-//            }
-//        }
-
         public static List<NodeBlock> SelectAllNodeBlocks()
         {
             var result = new List<NodeBlock>();
@@ -46,8 +25,6 @@ namespace GraphyDb.IO
             return result;
         }
 
-
-        // todo: review
         public static HashSet<NodeBlock> SelectNodeBlocksByLabelAndProperties(string label,
             Dictionary<string, object> props)
         {

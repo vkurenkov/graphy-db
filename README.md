@@ -26,7 +26,7 @@ Create new node with label `"user"` (every node must have a label):
 Node user1 = engine.AddNode("user");
 ```
 
-Add property `"age"` with value `19` to `user1`:
+Add property `"age"` (propety keys must be strings) with value `19` to `user1`:
 ```C#
 user1["age"] = 19;
 ```
@@ -65,7 +65,7 @@ You can delete Nodes and Relations via uniform syntax:
 engine.Delete(x); // x can be a Node or Relation
 ```
 
-Or call method Delete directly on Node or property:
+Or call method Delete directly on Node or Relation:
 ```C#
 x.Delete() // x can be a Node or Relation
 ```
@@ -111,11 +111,11 @@ query.Execute()
 
 After `query.Execute()` objects `A`, `B` and `C` (which are of class `NodeSet`) will be populated with Nodes; `X`, `Y` (which are of class `RelationSet`) will be populated with Relations such that:
 
-`A <-X- B -Y-> C` (`X` is a relation from `A` to `B` and `Y` is a relation from `B` to `C`) considering all node and relation descriptions. With this simple syntax you can create as complex queries as you want.
+`A <-X- B -Y-> C` (`X` is a relation from `B` to `A` and `Y` is a relation from `B` to `C`) considering all node and relation descriptions. With this simple syntax you can create as complex queries as you want.
 
-
-
-
-
+## To delete entire database
+```C#
+engine.DropDatabase();
+```
 
 

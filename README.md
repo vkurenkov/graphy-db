@@ -115,17 +115,17 @@ More complex example:
 var query = new Query(engine);
 
 var A = query.Match(nodeDescriptionForA);
-var X = query.From(relationDescriptionForX);
+var x = query.From(relationDescriptionForX);
 var B = query.Match(nodeDescriptionForB);
-var Y = query.To(relationDescriptionForY);
+var y = query.To(relationDescriptionForY);
 var C = query.Match(nodeDescriptionForC);
 
 query.Execute();
 ```
 
-After `query.Execute();` objects `A`, `B` and `C` (which are of class `NodeSet`) will be populated with Nodes; `X`, `Y` (which are of class `RelationSet`) will be populated with Relations such that:
+After `query.Execute();` objects `A`, `B` and `C` (which are of class `NodeSet`) will be populated with Nodes; `x`, `y` (which are of class `RelationSet`) will be populated with Relations such that:
 
-`A <-X- B -Y-> C` (`X` is a relation from `B` to `A` and `Y` is a relation from `B` to `C`) considering all node and relation descriptions. With this simple syntax you can create as complex queries as you want.
+`A <-x- B -y-> C` (`x` is a relation from `B` to `A` and `y` is a relation from `B` to `C`) considering all node and relation descriptions. With this simple syntax you can create as complex queries as you want.
 
 ## To delete entire database
 ```C#

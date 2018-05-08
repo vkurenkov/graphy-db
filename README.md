@@ -96,7 +96,21 @@ These classes represent results of a Query. `nodeSet.Nodes` is a `HashSet<Node>`
 
 * `Query(DbEngine engine)`
 
-The main class to create a Query. The following example will help you understand its syntas:
+The main class to create a Query. The following examples will help you understand its syntas:
+
+To get all Nodes mathcing particular `nodeDescription`:
+```C#
+var query = new Query(engine);
+
+var nodeSet = query.Match(nodeDescription);
+
+query.Execute();
+```
+After `query.Execute();` `nodeSet` with be populated with found nodes.
+
+
+More complex example:
+
 ```C#
 var query = new Query(engine);
 
@@ -109,7 +123,7 @@ var C = query.Match(nodeDescriptionForC);
 query.Execute();
 ```
 
-After `query.Execute()` objects `A`, `B` and `C` (which are of class `NodeSet`) will be populated with Nodes; `X`, `Y` (which are of class `RelationSet`) will be populated with Relations such that:
+After `query.Execute();` objects `A`, `B` and `C` (which are of class `NodeSet`) will be populated with Nodes; `X`, `Y` (which are of class `RelationSet`) will be populated with Relations such that:
 
 `A <-X- B -Y-> C` (`X` is a relation from `B` to `A` and `Y` is a relation from `B` to `C`) considering all node and relation descriptions. With this simple syntax you can create as complex queries as you want.
 

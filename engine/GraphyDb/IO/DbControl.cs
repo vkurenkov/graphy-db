@@ -120,7 +120,7 @@ namespace GraphyDb.IO
                         idFileStream.Seek(blockNumber * 4, SeekOrigin.Begin);
                         idFileStream.Read(storedIdBytes, 0, 4);
                         IdStorageDictionary[filePath] = BitConverter.ToInt32(storedIdBytes, 0);
-                        Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
+//                        Console.WriteLine($"Last Id for {filePath} is {IdStorageDictionary[filePath]}");
                     }
                 }
 
@@ -162,7 +162,7 @@ namespace GraphyDb.IO
 
             foreach (var filePath in DbControl.DbFilePaths)
             {
-                FileStreamDictionary?[filePath].Dispose();
+                FileStreamDictionary?[filePath]?.Dispose();
                 FileStreamDictionary[filePath] = null;
             }
 

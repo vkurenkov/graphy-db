@@ -20,3 +20,7 @@ One of the possible user-cases.
 
 ### Server
 This part is in control of handling messages from the camera and requester clients. It uses graphy-db to track all objects and their spatial connectivity to each other. 
+
+Example of the server logging.
+
+![server](https://user-images.githubusercontent.com/4092658/39752965-cd00b5c0-52c5-11e8-965c-7b86b894eb36.PNG)
